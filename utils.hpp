@@ -1,12 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <thread>
-#include <chrono>
-#include <termios.h>
-#include <unistd.h>
-
 void disableInput() {
     termios tty;
     tcgetattr(STDIN_FILENO, &tty);
@@ -21,18 +12,34 @@ void enableInput() {
     tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
+void setTerminalSize(int height, int width) {
+    std::string str = std::format("printf '\\e[8;{};{}t'", height, width);
+    system(str.c_str());
+}
+
 void clearInputBuffer() {
     tcflush(STDIN_FILENO, TCIFLUSH);
 }
 
-// Function to hide the cursor
 void hideCursor() {
     std::cout << "\e[?25l";
 }
 
-// Function to show the cursor
 void showCursor() {
     std::cout << "\e[?25h";
+}
+
+void setTerminal(bool start) {
+    system("clear");
+    if (start) {
+	setTerminalSize(35, 54);
+	hideCursor();
+	disableInput();
+    } else {
+	clearInputBuffer();
+	showCursor();
+	enableInput();
+    }
 }
 
 std::string readFileToString(const std::string& filePath) {
@@ -46,14 +53,51 @@ std::string readFileToString(const std::string& filePath) {
 }
 
 void printAtPosition(int x, int y, const std::string& text) {
-    // 1-based indexing
     std::cout << "\033[" << y << ";" << x << "H" << text << std::flush;
-    std::cout << "\033[1;1H" << std::flush;
 }
 
 void setArrowKey(char* key) {
-	char seq[2];
-	if (read(STDIN_FILENO, &seq[0], 1) == 1 && read(STDIN_FILENO, &seq[1], 1) == 1 && seq[0] == '[') {
-		*key = seq[1]; 
+    char seq[2];
+    if (read(STDIN_FILENO, &seq[0], 1) == 1 && read(STDIN_FILENO, &seq[1], 1) == 1 && seq[0] == '[') {
+	*key = seq[1];
+    }
+}
+
+void printCorners() {
+    for (int i = 1; i < 35; i++) {
+	if (i == 1 || i == 34) {
+	    for (int j = 1; j < 55; j++) {
+		if (j == 1 || j == 54) {
+		    printAtPosition(j, i, ".");
+		} else {
+		    printAtPosition(j, i, "_");
+		}
+	    }
+	} else {
+	    for (int j = 1; j < 55; j++) {
+		if (j == 1 || j == 54) {
+		    printAtPosition(j, i, "|");
+		} else {
+		    printAtPosition(j, i, " ");
+		}
+	    }
 	}
+    }
+}
+
+void printDisplayCorners() {
+    for (int i = 0; i < 22; i++) {
+	if (i == 0 || i == 21) {
+	    for (int j = 0; j < 22; j++) {
+		if (j == 0 || j ==21) printAtPosition(17+j, 7+i, "+");
+		else {
+		    if (i == 0) printAtPosition(17+j, 7+i, "-");
+		    else printAtPosition(17+j, 7+i, "=");
+		}
+	    }
+	} else {
+	    printAtPosition(17, 7+i, "|");
+	    printAtPosition(38, 7+i, "|");
+	}
+    }
 }
