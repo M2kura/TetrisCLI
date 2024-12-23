@@ -1,45 +1,23 @@
-void disableInput() {
-    termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    tty.c_lflag &= ~(ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
-}
+#include "tetris.hpp"
 
-void enableInput() {
-    termios tty;
-    tcgetattr(STDIN_FILENO, &tty);
-    tty.c_lflag |= (ICANON | ECHO);
-    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
-}
-
-void setTerminalSize(int height, int width) {
-    std::string str = std::format("printf '\\e[8;{};{}t'", height, width);
-    system(str.c_str());
-}
-
-void clearInputBuffer() {
-    tcflush(STDIN_FILENO, TCIFLUSH);
-}
-
-void hideCursor() {
-    std::cout << "\e[?25l";
-}
-
-void showCursor() {
-    std::cout << "\e[?25h";
-}
-
-void setTerminal(bool start) {
+void rawMode(bool start) {
     system("clear");
+    termios tty;
+    tcgetattr(STDIN_FILENO, &tty);
     if (start) {
-	setTerminalSize(35, 54);
-	hideCursor();
-	disableInput();
+	system("printf '\\e[8;35;54t'"); // set terminal size
+	std::cout << "\e[?25l"; // hide cursor
+	tty.c_lflag &= ~(ICANON | ECHO | ISIG | IEXTEN);
+	tty.c_iflag &= ~(IXON);
+	tty.c_oflag &= ~(OPOST);
     } else {
-	clearInputBuffer();
-	showCursor();
-	enableInput();
+	tcflush(STDIN_FILENO, TCIFLUSH); // clear input buffer
+	std::cout << "\e[?25h"; // show cursor
+	tty.c_lflag |= (ICANON | ECHO | ISIG | IEXTEN);
+	tty.c_iflag |= (IXON);
+	tty.c_oflag |= (OPOST);
     }
+    tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
 std::string readFileToString(const std::string& filePath) {
