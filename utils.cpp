@@ -34,13 +34,6 @@ void printAtPosition(int x, int y, const std::string& text) {
     std::cout << "\033[" << y << ";" << x << "H" << text << std::flush;
 }
 
-void setArrowKey(char* key) {
-    char seq[2];
-    if (read(STDIN_FILENO, &seq[0], 1) == 1 && read(STDIN_FILENO, &seq[1], 1) == 1 && seq[0] == '[') {
-	*key = seq[1];
-    }
-}
-
 void printCorners() {
     for (int i = 1; i < 35; i++) {
 	if (i == 1 || i == 34) {

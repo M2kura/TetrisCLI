@@ -15,23 +15,26 @@
 # include <mutex>
 # include <condition_variable>
 # include <fcntl.h>
+# include <utility>
+# include <random>
+# include <algorithm>
 
-struct gameDisplay {
-    std::vector<std::vector<int>> display;
-    gameDisplay(): display(20, std::vector<int>(10, 0)) {}
+enum square {
+    empty,
+    old,
+    current
 };
+
 
 class Tetris;
 
+// menu.cpp
 class Menu {
 public:
     bool isOpen() { return !closed; }
     void toggle() { closed = !closed; }
     int onLine() { return currentLine; }
-    void open() {
-        toggle();
-        printMenu();
-    }
+    void open(bool re);
     Menu(Tetris *tetris) {
         app = tetris;
     };
@@ -40,23 +43,9 @@ public:
 private:
     bool closed = true;
     int currentLine = 1;
-    void printMenu();
-    Tetris *app;
-};
-
-class Tetris {
-public:
-    void start();
-    void exit() { quit = true; }
-private:
-    std::queue<char> inputQueue;
-    std::mutex mtx;
-    std::condition_variable cv;
-    bool quit = false;
-    Menu menu{this};
-
-    void inputLoop();
-    void outputLoop();
+    bool inGame = false;
+    void printMenu(bool re);
+    Tetris *app = nullptr;
 };
 
 // game.cpp
@@ -65,22 +54,67 @@ public:
     bool isPaused() {return paused;}
     bool isFinished() {return finished;}
 
-    void startGame();
+    void start() { printDisplay(true); }
+    void pause() { paused = true; }
+    void resume() { paused = false; }
+    void moveRight();
+    void moveLeft();
+    void update();
 
-    Game(): gd() {};
+    Game(): tetroQueue(newTetrominos()) {
+        gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, empty));
+        gd.curTet = {};
+        addTetromino(nextTetromino());
+    };
 private:
-    std::queue<std::string> inputQueue;
+    struct GD {
+        std::vector<std::vector<square>> display;
+        std::vector<std::pair<int, int>> curTet;
+    } gd;
     bool paused = false;
     bool finished = false;
-    gameDisplay gd;
+    std::vector<char> tetroQueue;
+
+    bool checkEnd();
+    void addTetromino(char type);
+    void dropTetromino();
+    void printDisplay(bool dots);
+    void printTetromino();
+    void placeTetromino();
+    void checkTetris();
+    char nextTetromino();
+    std::vector<char> newTetrominos();
 };
-void printDisplay(gameDisplay gd, bool dots);
+
+// tetris.cpp
+class Tetris {
+public:
+    void start();
+    void exit() { quit = true; }
+    void newGame();
+    void quitGame();
+    bool onPause() { return game && game->isPaused(); }
+    void pauseGame() { game->pause(); }
+    void resumeGame() { game->resume(); }
+    void startGame() { game->start(); }
+private:
+    std::queue<char> inputQueue;
+    std::mutex mtx;
+    std::condition_variable cv;
+    bool quit = false;
+    Menu menu{this};
+    Game *game = nullptr;
+
+    void inputLoop();
+    void outputLoop();
+    void gameLoop();
+};
+
 
 // utils.cpp
 void rawMode(bool start);
 std::string readFileToString(const std::string& filePath);
 void printAtPosition(int x, int y, const std::string& text);
-void setArrowKey(char* key);
 void printCorners();
 void printDisplayCorners();
 
