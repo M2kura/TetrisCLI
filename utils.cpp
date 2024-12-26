@@ -72,3 +72,13 @@ void printDisplayCorners() {
 	}
     }
 }
+
+void printMessage(int code) {
+    if (code == 0) {
+	printAtPosition(20, 31, "                ");
+    } else if (code == 1) {
+	printAtPosition(23, 31, "Game Paused");
+    } else if (code == 2) {
+	printAtPosition(23, 31, "Game Over");
+    }
+}

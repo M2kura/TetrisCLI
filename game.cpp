@@ -129,11 +129,22 @@ void Game::update() {
         return;
     }
     if (checkEnd()) {
+        printMessage(2);
         finished = true;
         return;
     }
     dropTetromino();
     printDisplay(true);
     printTetromino();
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+void Game::pause() { 
+    printMessage(1);
+    paused = true;
+}
+
+void Game::resume() { 
+    printMessage(0);
+    paused = false;
 }

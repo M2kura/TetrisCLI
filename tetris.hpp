@@ -25,6 +25,12 @@ enum square {
     current
 };
 
+enum menuMode {
+    home,
+    settings,
+    paused,
+    gameover
+};
 
 class Tetris;
 
@@ -34,17 +40,19 @@ public:
     bool isOpen() { return !closed; }
     void toggle() { closed = !closed; }
     int onLine() { return currentLine; }
-    void open(bool re);
+    void open(menuMode md);
     Menu(Tetris *tetris) {
         app = tetris;
     };
 
     void press(const std::string key);
 private:
+    menuMode mode = home;
     bool closed = true;
     int currentLine = 1;
-    bool inGame = false;
-    void printMenu(bool re);
+    void printMenu();
+    void clearMenu();
+    void setMode(menuMode md) { mode = md; }
     Tetris *app = nullptr;
 };
 
@@ -55,8 +63,8 @@ public:
     bool isFinished() {return finished;}
 
     void start() { printDisplay(true); }
-    void pause() { paused = true; }
-    void resume() { paused = false; }
+    void pause();
+    void resume();
     void moveRight();
     void moveLeft();
     void update();
@@ -117,5 +125,6 @@ std::string readFileToString(const std::string& filePath);
 void printAtPosition(int x, int y, const std::string& text);
 void printCorners();
 void printDisplayCorners();
+void printMessage(int code);
 
 #endif

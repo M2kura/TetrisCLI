@@ -2,7 +2,7 @@
 
 void Tetris::start() {
     rawMode(true);
-    menu.open(false);
+    menu.open(home);
     std::thread inputThread(&Tetris::inputLoop, this);
     std::thread outputThread(&Tetris::outputLoop, this);
     std::thread gameThread(&Tetris::gameLoop, this);
@@ -17,6 +17,7 @@ void Tetris::quitGame() {
         delete game;
         game = nullptr;
     }
+    printMessage(0);
 }
 
 void Tetris::newGame() {
@@ -72,10 +73,10 @@ void Tetris::outputLoop() {
                 if (input == '\n') menu.press("enter");
                 else if (input == 'k' || key == 'A') menu.press("up");
                 else if (input == 'j' || key == 'B') menu.press("down");
-            } else {
+            } else if (!game->isFinished()) {
                 if (input == 'q') {
                     game->pause();
-                    menu.open(true);
+                    menu.open(paused);
                 } else if (key == 'C') game->moveRight();
                 else if (key == 'D') game->moveLeft();
             }
@@ -88,6 +89,7 @@ void Tetris::gameLoop() {
     while(!quit) {
         if (game) {
             if (!game->isPaused() && !game->isFinished()) game->update();
+            else if(game->isFinished() && !menu.isOpen()) menu.open(gameover);
             else std::this_thread::sleep_for(std::chrono::milliseconds(100));
         } else std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
