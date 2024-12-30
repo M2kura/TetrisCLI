@@ -35,7 +35,7 @@ void Game::addTetromino(char type) {
             gd.curTet = {{1,3},{1,4},{0,4},{0,5}};
             break;
         case 'T':
-            gd.curTet = {{1,3},{1,4},{1,5},{0,5}};
+            gd.curTet = {{1,3},{1,4},{1,5},{0,4}};
             break;
         case 'Z':
             gd.curTet = {{1,4},{1,5},{0,4},{0,3}};
@@ -86,7 +86,10 @@ void Game::placeTetromino() {
 void Game::dropTetromino() {
     for (auto& cords : gd.curTet) {
         if (cords.first == 21 || gd.display[cords.first+1][cords.second] == old ) {
-            placeTetromino();
+            if (checkEnd()) {
+                printMessage(2);
+                finished = true;
+            } else placeTetromino();
             return;
         }
     }
@@ -98,7 +101,8 @@ void Game::dropTetromino() {
 void Game::moveRight() {
     if (finished) return;
     for (auto& cords : gd.curTet) {
-        if (cords.second == 9) return; 
+        if (cords.second == 9 ||
+        gd.display[cords.first][cords.second+1] == old) return;
     }
     for (auto& cords : gd.curTet) cords.second++;
     printDisplay(true);
@@ -108,9 +112,21 @@ void Game::moveRight() {
 void Game::moveLeft() {
     if (finished) return;
     for (auto& cords : gd.curTet) {
-        if (cords.second == 0) return;
+        if (cords.second == 0 ||
+        gd.display[cords.first][cords.second-1] == old) return;
     }
     for (auto& cords : gd.curTet) cords.second--;
+    printDisplay(true);
+    printTetromino();
+}
+
+void Game::moveDown() {
+    if (finished) return;
+    for (auto& cords : gd.curTet) {
+        if (cords.first == 21 ||
+        gd.display[cords.first+1][cords.second] == old) return;
+    }
+    for (auto& cords : gd.curTet) cords.first++;
     printDisplay(true);
     printTetromino();
 }
@@ -125,18 +141,11 @@ bool Game::checkEnd() {
 }
 
 void Game::update() {
-    if (finished) {
-        return;
-    }
-    if (checkEnd()) {
-        printMessage(2);
-        finished = true;
-        return;
-    }
     dropTetromino();
+    if (finished) return;
     printDisplay(true);
     printTetromino();
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 
 void Game::pause() { 

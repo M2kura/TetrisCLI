@@ -67,6 +67,7 @@ public:
     void resume();
     void moveRight();
     void moveLeft();
+    void moveDown();
     void update();
 
     Game(): tetroQueue(newTetrominos()) {
