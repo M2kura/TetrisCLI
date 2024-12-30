@@ -30,8 +30,8 @@ std::string readFileToString(const std::string& filePath) {
     return buffer.str();
 }
 
-void printAtPosition(int x, int y, const std::string& text) {
-    std::cout << "\033[" << y << ";" << x << "H" << text << std::flush;
+void printAtPosition(int x, int y, const std::string& color, const std::string& text) {
+    std::cout << "\033[" << y << ";" << x << "H" << color << text << RESET << std::flush;
 }
 
 void printCorners() {
@@ -39,17 +39,17 @@ void printCorners() {
 	if (i == 1 || i == 34) {
 	    for (int j = 1; j < 55; j++) {
 		if (j == 1 || j == 54) {
-		    printAtPosition(j, i, ".");
+		    printAtPosition(j, i, WHITE, ".");
 		} else {
-		    printAtPosition(j, i, "_");
+		    printAtPosition(j, i, WHITE, "_");
 		}
 	    }
 	} else {
 	    for (int j = 1; j < 55; j++) {
 		if (j == 1 || j == 54) {
-		    printAtPosition(j, i, "|");
+		    printAtPosition(j, i, WHITE, "|");
 		} else {
-		    printAtPosition(j, i, " ");
+		    printAtPosition(j, i, WHITE, " ");
 		}
 	    }
 	}
@@ -60,25 +60,25 @@ void printDisplayCorners() {
     for (int i = 0; i < 22; i++) {
 	if (i == 0 || i == 21) {
 	    for (int j = 0; j < 22; j++) {
-		if (j == 0 || j ==21) printAtPosition(17+j, 7+i, "+");
+		if (j == 0 || j ==21) printAtPosition(17+j, 7+i, WHITE, "+");
 		else {
-		    if (i == 0) printAtPosition(17+j, 7+i, "-");
-		    else printAtPosition(17+j, 7+i, "=");
+		    if (i == 0) printAtPosition(17+j, 7+i, WHITE, "-");
+		    else printAtPosition(17+j, 7+i, WHITE, "=");
 		}
 	    }
 	} else {
-	    printAtPosition(17, 7+i, "|");
-	    printAtPosition(38, 7+i, "|");
+	    printAtPosition(17, 7+i, WHITE, "|");
+	    printAtPosition(38, 7+i, WHITE, "|");
 	}
     }
 }
 
 void printMessage(int code) {
     if (code == 0) {
-	printAtPosition(20, 31, "                ");
+	printAtPosition(20, 31, WHITE, "                ");
     } else if (code == 1) {
-	printAtPosition(23, 31, "Game Paused");
+	printAtPosition(23, 31, WHITE, "Game Paused");
     } else if (code == 2) {
-	printAtPosition(23, 31, "Game Over");
+	printAtPosition(23, 31, WHITE, "Game Over");
     }
 }

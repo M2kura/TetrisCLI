@@ -19,17 +19,26 @@
 # include <random>
 # include <algorithm>
 
-enum square {
-    empty,
-    old,
-    current
-};
+#define RESET   "\033[0m"
+#define RED     "\033[38;5;196m"
+#define GREEN   "\033[38;5;46m"
+#define YELLOW  "\033[38;5;226m"
+#define BLUE    "\033[38;5;21m"
+#define PURPLE  "\033[38;5;201m"
+#define CYAN    "\033[38;5;51m"
+#define ORANGE  "\033[38;5;208m"
+#define WHITE   "\033[38;5;15m"
 
 enum menuMode {
     home,
     settings,
     paused,
     gameover
+};
+
+struct square {
+    std::string type;
+    std::string color;
 };
 
 class Tetris;
@@ -71,7 +80,7 @@ public:
     void update();
 
     Game(): tetroQueue(newTetrominos()) {
-        gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, empty));
+        gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, {"empty", ""}));
         gd.curTet = {};
         addTetromino(nextTetromino());
     };
@@ -79,6 +88,7 @@ private:
     struct GD {
         std::vector<std::vector<square>> display;
         std::vector<std::pair<int, int>> curTet;
+        std::string color;
     } gd;
     bool paused = false;
     bool finished = false;
@@ -123,7 +133,7 @@ private:
 // utils.cpp
 void rawMode(bool start);
 std::string readFileToString(const std::string& filePath);
-void printAtPosition(int x, int y, const std::string& text);
+void printAtPosition(int x, int y, const std::string& color, const std::string& text);
 void printCorners();
 void printDisplayCorners();
 void printMessage(int code);

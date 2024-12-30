@@ -7,9 +7,9 @@ void Menu::open(menuMode md) {
 }
 
 void Menu::clearMenu() {
-    printAtPosition(3, 3, "                            ");
-    printAtPosition(3, 4, "                            ");
-    printAtPosition(3, 5, "                            ");
+    printAtPosition(3, 3, WHITE, "                            ");
+    printAtPosition(3, 4, WHITE, "                            ");
+    printAtPosition(3, 5, WHITE, "                            ");
 }
 
 void Menu::press(const std::string key) {
@@ -38,13 +38,13 @@ void Menu::press(const std::string key) {
         }
     } else if (mode != gameover) {
         if (key == "down" && onLine() < 3) {
-            printAtPosition(3, onLine()+2, " ");
+            printAtPosition(3, onLine()+2, WHITE, " ");
             currentLine++;
-            printAtPosition(3, onLine()+2, "*");
+            printAtPosition(3, onLine()+2, WHITE, "*");
         } else if (key == "up" && onLine() > 1) {
-            printAtPosition(3, onLine()+2, " ");
+            printAtPosition(3, onLine()+2, WHITE, " ");
             currentLine--;
-            printAtPosition(3, onLine()+2, "*");
+            printAtPosition(3, onLine()+2, WHITE, "*");
         }
     }
 }
@@ -53,12 +53,12 @@ void Menu::printMenu() {
     currentLine = 1;
     if (mode == home) {
         printCorners();
-        printAtPosition(4, 3, "a) Start Game");
-        printAtPosition(4, 5, "c) Quit Tetris");
+        printAtPosition(4, 3, WHITE, "a) Start Game");
+        printAtPosition(4, 5, WHITE, "c) Quit Tetris");
     } else if (mode == paused) {
-        printAtPosition(4, 3, "a) Resume Game");
-        printAtPosition(4, 5, "c) Quit Game");
-    } else if (mode == gameover) printAtPosition(4, 3, "() Back to Menu");
-    if (mode == home || mode == paused) printAtPosition(4, 4, "b) Options");
-    printAtPosition(3, currentLine+2, "*");
+        printAtPosition(4, 3, WHITE, "a) Resume Game");
+        printAtPosition(4, 5, WHITE, "c) Quit Game");
+    } else if (mode == gameover) printAtPosition(4, 3, WHITE, "() Back to Menu");
+    if (mode == home || mode == paused) printAtPosition(4, 4, WHITE, "b) Options");
+    printAtPosition(3, currentLine+2, WHITE, "*");
 }
