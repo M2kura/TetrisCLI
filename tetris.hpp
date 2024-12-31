@@ -77,6 +77,7 @@ public:
     void moveRight();
     void moveLeft();
     void moveDown();
+    void rotate();
     void update();
 
     Game(): tetroQueue(newTetrominos()) {
@@ -89,6 +90,8 @@ private:
         std::vector<std::vector<square>> display;
         std::vector<std::pair<int, int>> curTet;
         std::string color;
+        char type;
+        int stage;
     } gd;
     bool paused = false;
     bool finished = false;
@@ -101,6 +104,12 @@ private:
     void printDisplay(bool dots);
     void printTetromino();
     void placeTetromino();
+    void rotateI(int row, int col);
+    void rotateT(int row, int col);
+    void rotateS(int row, int col);
+    void rotateZ(int row, int col);
+    void rotateJ(int row, int col);
+    void rotateL(int row, int col);
     void checkTetris();
     char nextTetromino();
     std::vector<char> newTetrominos();

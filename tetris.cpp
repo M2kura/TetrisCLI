@@ -80,6 +80,7 @@ void Tetris::outputLoop() {
                 } else if (key == 'C') game->moveRight();
                 else if (key == 'D') game->moveLeft();
                 else if (key == 'B') game->moveDown();
+                else if (key == 'A') game->rotate();
             }
             lock.lock();
         }
