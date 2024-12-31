@@ -109,6 +109,7 @@ void Game::dropTetromino() {
 
 void Game::moveRight() {
     if (finished) return;
+    std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.second == 9 ||
         gd.display[cords.first][cords.second+1].type == "old") return;
@@ -120,6 +121,7 @@ void Game::moveRight() {
 
 void Game::moveLeft() {
     if (finished) return;
+    std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.second == 0 ||
         gd.display[cords.first][cords.second-1].type == "old") return;
@@ -131,6 +133,7 @@ void Game::moveLeft() {
 
 void Game::moveDown() {
     if (finished) return;
+    std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.first == 21 ||
         gd.display[cords.first+1][cords.second].type == "old") return;
@@ -150,10 +153,13 @@ bool Game::checkEnd() {
 }
 
 void Game::update() {
+    {
+    std::lock_guard<std::mutex> lock(displayMutex);
     dropTetromino();
     if (finished) return;
     printDisplay(true);
     printTetromino();
+    }
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
 }
 

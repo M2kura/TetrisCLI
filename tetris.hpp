@@ -93,6 +93,7 @@ private:
     bool paused = false;
     bool finished = false;
     std::vector<char> tetroQueue;
+    std::mutex displayMutex;
 
     bool checkEnd();
     void addTetromino(char type);
