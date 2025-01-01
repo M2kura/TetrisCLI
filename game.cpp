@@ -5,10 +5,14 @@ void Game::printDisplay(bool dots) {
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
             auto cord = gd.display[i+2][j];
-            if (cord.type == "old") printAtPosition(18+(j*2), 8+i, cord.color, "[]");
+            if (cord.old) printAtPosition(18+(j*2), 8+i, cord.color, "[]");
             else printAtPosition(18+(j*2), 8+i, WHITE, background);
         }
     }
+}
+
+void Game::printScore() {
+    printAtPosition(41, 9, WHITE, std::to_string(score));
 }
 
 void Game::printTetromino() {
@@ -77,27 +81,50 @@ void Game::addTetromino(char type) {
     }
 }
 
-void Game::checkTetris() {
+void Game::checkClear() {
     std::vector<int> rows = {};
     for (int i = 21; i >= gd.highest; i--) {
         for (int j = 0; j < 10; j++) {
-            if (gd.display[i][j].type == "empty") break;
+            if (!gd.display[i][j].old) break;
             if (j == 9) {
                 rows.push_back(i);
                 for (int k = i; k < 9; k++) {
-                    gd.display[i][k].type = "empty";
+                    gd.display[i][k].old = false;
                     gd.display[i][k].color = "";
                 }
             }
         }
     }
-    while (rows.size() != 0) {
-        int row = rows.back();
-        rows.pop_back();
-        for (int i = row; i >= gd.highest; i--) {
-            gd.display[i] = gd.display[i-1];
+    if (rows.size() != 0) {
+        int cleared = rows.size();
+        if (cleared == 1) score += 100 * level;
+        else if (cleared == 2) score += 300 * level;
+        else if (cleared == 3) score += 500 * level;
+        else score += 800 * level;
+        while (rows.size() != 0) {
+            int row = rows.back();
+            rows.pop_back();
+            for (int i = row; i >= gd.highest; i--) {
+                gd.display[i] = gd.display[i-1];
+            }
+            gd.highest++;
         }
-        gd.highest++;
+        checkPerfectClear(cleared);
+        printScore();
+    }
+}
+
+void Game::checkPerfectClear(int cleared) {
+    for (int i = 18; i <= 21; i++) {
+        for (int j = 0; j <= 9; j++) {
+            if (gd.display[i][j].old) return;
+            if (i == 21 && j == 9) {
+                if (cleared == 1) score += 800 * level;
+                else if (cleared == 2) score += 1200 * level;
+                else if (cleared == 3) score += 1800 * level;
+                else score += 2000 * level;
+            }
+        }
     }
 }
 
@@ -122,18 +149,19 @@ std::vector<char> Game::newTetrominos() {
 void Game::placeTetromino() {
     for (auto& cords : gd.curTet) {
         if (cords.first < gd.highest) gd.highest = cords.first;
-        gd.display[cords.first][cords.second].type = "old";
+        gd.display[cords.first][cords.second].old = true;
         gd.display[cords.first][cords.second].color = gd.color;
     }
-    checkTetris();
+    checkClear();
     addTetromino(nextTetromino());
+    dropTetromino();
     printNext();
     printDisplay(true);
 }
 
 void Game::dropTetromino() {
     for (auto& cords : gd.curTet) {
-        if (cords.first == 21 || gd.display[cords.first+1][cords.second].type == "old") {
+        if (cords.first == 21 || gd.display[cords.first+1][cords.second].old) {
             if (checkEnd()) {
                 printMessage(2);
                 finished = true;
@@ -151,7 +179,7 @@ void Game::moveRight() {
     std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.second == 9 ||
-        gd.display[cords.first][cords.second+1].type == "old") return;
+        gd.display[cords.first][cords.second+1].old) return;
     }
     for (auto& cords : gd.curTet) cords.second++;
     printDisplay(true);
@@ -163,23 +191,25 @@ void Game::moveLeft() {
     std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.second == 0 ||
-        gd.display[cords.first][cords.second-1].type == "old") return;
+        gd.display[cords.first][cords.second-1].old) return;
     }
     for (auto& cords : gd.curTet) cords.second--;
     printDisplay(true);
     printTetromino();
 }
 
-void Game::moveDown() {
+void Game::softDrop() {
     if (finished) return;
     std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.first == 21 ||
-        gd.display[cords.first+1][cords.second].type == "old") return;
+        gd.display[cords.first+1][cords.second].old) return;
     }
     for (auto& cords : gd.curTet) cords.first++;
+    score++;
     printDisplay(true);
     printTetromino();
+    printScore();
 }
 
 void Game::rotate() {
@@ -199,26 +229,26 @@ void Game::rotate() {
 
 void Game::rotateI(int row, int col) {
     if (gd.stage == 1) {
-        if (row < 20 && row > 0 && gd.display[row+1][col].type != "old" &&
-            gd.display[row+2][col].type != "old" && gd.display[row-1][col].type != "old") {
+        if (row < 20 && row > 0 && !gd.display[row+1][col].old &&
+            !gd.display[row+2][col].old && !gd.display[row-1][col].old) {
             gd.curTet = {{row-1,col},{row,col},{row+1,col},{row+2,col}};
             gd.stage++;
         }
     } else if (gd.stage == 2) {
-        if (col < 9 && col > 1 && gd.display[row][col+1].type != "old" &&
-            gd.display[row][col-1].type != "old" && gd.display[row][col-2].type != "old") {
+        if (col < 9 && col > 1 && !gd.display[row][col+1].old &&
+            !gd.display[row][col-1].old && !gd.display[row][col-2].old) {
             gd.curTet = {{row,col+1},{row,col},{row,col-1},{row,col-2}};
             gd.stage++;
         }
     } else if (gd.stage == 3) {
-        if (row < 21 && row > 1 && gd.display[row+1][col].type != "old" &&
-            gd.display[row-2][col].type != "old" && gd.display[row-1][col].type != "old") {
+        if (row < 21 && row > 1 && !gd.display[row+1][col].old &&
+            !gd.display[row-2][col].old && !gd.display[row-1][col].old) {
             gd.curTet = {{row+1,col},{row,col},{row-1,col},{row-2,col}};
             gd.stage++;
         }
     } else if (gd.stage == 4) {
-        if (col < 8 && col > 0 && gd.display[row][col+1].type != "old" &&
-            gd.display[row][col-1].type != "old" && gd.display[row][col+2].type != "old") {
+        if (col < 8 && col > 0 && !gd.display[row][col+1].old &&
+            !gd.display[row][col-1].old && !gd.display[row][col+2].old) {
             gd.curTet = {{row,col-1},{row,col},{row,col+1},{row,col+2}};
             gd.stage = 1;
         }
@@ -226,22 +256,22 @@ void Game::rotateI(int row, int col) {
 }
 void Game::rotateT(int row, int col) {
     if (gd.stage == 1) {
-        if (row < 21 && gd.display[row+1][col].type != "old") {
+        if (row < 21 && !gd.display[row+1][col].old) {
             gd.curTet = {{row,col+1},{row-1,col},{row,col},{row+1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 2) {
-        if (col > 0 && gd.display[row][col-1].type != "old") {
+        if (col > 0 && !gd.display[row][col-1].old) {
             gd.curTet = {{row+1,col},{row,col+1},{row,col},{row,col-1}};
             gd.stage++;
         }
     } else if (gd.stage == 3) {
-        if (row > 0 && gd.display[row-1][col].type != "old") {
+        if (row > 0 && !gd.display[row-1][col].old) {
             gd.curTet = {{row,col-1},{row+1,col},{row,col},{row-1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 4) {
-        if (col < 9 && gd.display[row][col+1].type != "old") {
+        if (col < 9 && !gd.display[row][col+1].old) {
             gd.curTet = {{row-1,col},{row,col-1},{row,col},{row,col+1}};
             gd.stage = 1;
         }
@@ -249,22 +279,22 @@ void Game::rotateT(int row, int col) {
 }
 void Game::rotateS(int row, int col) {
     if (gd.stage == 1) {
-        if (row < 21 && gd.display[row][col+1].type != "old" && gd.display[row+1][col+1].type != "old") {
+        if (row < 21 && !gd.display[row][col+1].old && !gd.display[row+1][col+1].old) {
             gd.curTet = {{row+1,col+1},{row,col+1},{row,col},{row-1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 2) {
-        if (col > 0 && gd.display[row+1][col].type != "old" && gd.display[row+1][col-1].type != "old") {
+        if (col > 0 && !gd.display[row+1][col].old && !gd.display[row+1][col-1].old) {
             gd.curTet = {{row+1,col-1},{row+1,col},{row,col},{row,col+1}};
             gd.stage++;
         }
     } else if (gd.stage == 3) {
-        if (row > 0 && gd.display[row][col-1].type != "old" && gd.display[row-1][col-1].type != "old") {
+        if (row > 0 && !gd.display[row][col-1].old && !gd.display[row-1][col-1].old) {
             gd.curTet = {{row-1,col-1},{row,col-1},{row,col},{row+1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 4) {
-        if (col < 9 && gd.display[row-1][col].type != "old" && gd.display[row-1][col+1].type != "old") {
+        if (col < 9 && !gd.display[row-1][col].old && !gd.display[row-1][col+1].old) {
             gd.curTet = {{row-1,col+1},{row-1,col},{row,col},{row,col-1}};
             gd.stage = 1;
         }
@@ -272,22 +302,22 @@ void Game::rotateS(int row, int col) {
 }
 void Game::rotateZ(int row, int col) {
     if (gd.stage == 1) {
-        if (row < 21 && gd.display[row-1][col+1].type != "old" && gd.display[row+1][col].type != "old") {
+        if (row < 21 && !gd.display[row-1][col+1].old && !gd.display[row+1][col].old) {
             gd.curTet = {{row-1,col+1},{row,col+1},{row,col},{row+1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 2) {
-        if (col > 0 && gd.display[row][col-1].type != "old" && gd.display[row+1][col+1].type != "old") {
+        if (col > 0 && !gd.display[row][col-1].old && !gd.display[row+1][col+1].old) {
             gd.curTet = {{row+1,col+1},{row+1,col},{row,col},{row,col-1}};
             gd.stage++;
         }
     } else if (gd.stage == 3) {
-        if (row > 0 && gd.display[row-1][col].type != "old" && gd.display[row+1][col-1].type != "old") {
+        if (row > 0 && !gd.display[row-1][col].old && !gd.display[row+1][col-1].old) {
             gd.curTet = {{row+1,col-1},{row,col-1},{row,col},{row-1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 4) {
-        if (col < 9 && gd.display[row-1][col-1].type != "old" && gd.display[row][col+1].type != "old") {
+        if (col < 9 && !gd.display[row-1][col-1].old && !gd.display[row][col+1].old) {
             gd.curTet = {{row-1,col-1},{row-1,col},{row,col},{row,col+1}};
             gd.stage = 1;
         }
@@ -295,26 +325,26 @@ void Game::rotateZ(int row, int col) {
 }
 void Game::rotateJ(int row, int col) {
     if (gd.stage == 1) {
-        if (row < 21 && gd.display[row-1][col+1].type != "old" && gd.display[row-1][col].type != "old" && 
-            gd.display[row+1][col].type != "old") {
+        if (row < 21 && !gd.display[row-1][col+1].old && !gd.display[row-1][col].old && 
+            !gd.display[row+1][col].old) {
             gd.curTet = {{row-1,col+1},{row-1,col},{row,col},{row+1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 2) {
-        if (col > 0 && gd.display[row+1][col+1].type != "old" && gd.display[row][col+1].type != "old" && 
-            gd.display[row][col-1].type != "old") {
+        if (col > 0 && !gd.display[row+1][col+1].old && !gd.display[row][col+1].old && 
+            !gd.display[row][col-1].old) {
             gd.curTet = {{row+1,col+1},{row,col+1},{row,col},{row,col-1}};
             gd.stage++;
         }
     } else if (gd.stage == 3) {
-        if (row > 0 && gd.display[row+1][col-1].type != "old" && gd.display[row+1][col].type != "old" && 
-            gd.display[row-1][col].type != "old") {
+        if (row > 0 && !gd.display[row+1][col-1].old && !gd.display[row+1][col].old && 
+            !gd.display[row-1][col].old) {
             gd.curTet = {{row+1,col-1},{row+1,col},{row,col},{row-1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 4) {
-        if (col < 9 && gd.display[row-1][col-1].type != "old" && gd.display[row][col-1].type != "old" && 
-            gd.display[row][col+1].type != "old") {
+        if (col < 9 && !gd.display[row-1][col-1].old && !gd.display[row][col-1].old && 
+            !gd.display[row][col+1].old) {
             gd.curTet = {{row-1,col-1},{row,col-1},{row,col},{row,col+1}};
             gd.stage = 1;
         }
@@ -322,26 +352,26 @@ void Game::rotateJ(int row, int col) {
 }
 void Game::rotateL(int row, int col) {
     if (gd.stage == 1) {
-        if (row < 21 && gd.display[row+1][col+1].type != "old" && gd.display[row+1][col].type != "old" && 
-            gd.display[row-1][col].type != "old") {
+        if (row < 21 && !gd.display[row+1][col+1].old && !gd.display[row+1][col].old && 
+            !gd.display[row-1][col].old) {
             gd.curTet = {{row+1,col+1},{row+1,col},{row,col},{row-1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 2) {
-        if (col > 0 && gd.display[row+1][col-1].type != "old" && gd.display[row][col-1].type != "old" && 
-            gd.display[row][col+1].type != "old") {
+        if (col > 0 && !gd.display[row+1][col-1].old && !gd.display[row][col-1].old && 
+            !gd.display[row][col+1].old) {
             gd.curTet = {{row+1,col-1},{row,col-1},{row,col},{row,col+1}};
             gd.stage++;
         }
     } else if (gd.stage == 3) {
-        if (row > 0 && gd.display[row-1][col-1].type != "old" && gd.display[row-1][col].type != "old" && 
-            gd.display[row+1][col].type != "old") {
+        if (row > 0 && !gd.display[row-1][col-1].old && !gd.display[row-1][col].old && 
+            !gd.display[row+1][col].old) {
             gd.curTet = {{row-1,col-1},{row-1,col},{row,col},{row+1,col}};
             gd.stage++;
         }
     } else if (gd.stage == 4) {
-        if (col < 9 && gd.display[row-1][col+1].type != "old" && gd.display[row][col+1].type != "old" && 
-            gd.display[row][col-1].type != "old") {
+        if (col < 9 && !gd.display[row-1][col+1].old && !gd.display[row][col+1].old && 
+            !gd.display[row][col-1].old) {
             gd.curTet = {{row-1,col+1},{row,col+1},{row,col},{row,col-1}};
             gd.stage = 1;
         }
@@ -350,7 +380,7 @@ void Game::rotateL(int row, int col) {
 
 bool Game::checkEnd() {
     for (const auto& cords : gd.curTet) {
-        if (cords.first == 1 && gd.display[2][cords.second].type == "old") {
+        if (cords.first == 1 && gd.display[2][cords.second].old) {
             return true;
         }
     }

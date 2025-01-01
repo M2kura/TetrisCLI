@@ -76,6 +76,8 @@ void printGameInterface() {
     printAtPosition(41, 9, WHITE, "0");
     printAtPosition(41, 11, WHITE, "LEVEL:");
     printAtPosition(41, 12, WHITE, "1");
+    printAtPosition(41, 14, WHITE, "LINES:");
+    printAtPosition(41, 15, WHITE, "0");
 }
 
 void printMessage(int code) {

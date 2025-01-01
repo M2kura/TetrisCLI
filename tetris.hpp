@@ -37,7 +37,7 @@ enum menuMode {
 };
 
 struct square {
-    std::string type;
+    bool old;
     std::string color;
 };
 
@@ -75,12 +75,12 @@ public:
     void resume();
     void moveRight();
     void moveLeft();
-    void moveDown();
+    void softDrop();
     void rotate();
     void update();
 
     Game(): tetroQueue(newTetrominos()) {
-        gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, {"empty", ""}));
+        gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, {false, ""}));
         gd.curTet = {};
         addTetromino(nextTetromino());
         printDisplay(true);
@@ -98,6 +98,10 @@ private:
     bool paused = false;
     bool finished = false;
     std::vector<char> tetroQueue;
+    int score = 0;
+    int level = 1;
+    int combo = -1;
+    int lines = 0;
     std::mutex displayMutex;
 
     bool checkEnd();
@@ -113,7 +117,9 @@ private:
     void rotateZ(int row, int col);
     void rotateJ(int row, int col);
     void rotateL(int row, int col);
-    void checkTetris();
+    void checkClear();
+    void checkPerfectClear(int cleared);
+    void printScore();
     char nextTetromino();
     std::vector<char> newTetrominos();
 };

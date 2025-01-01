@@ -34,15 +34,16 @@ void Tetris::inputLoop() {
             std::lock_guard<std::mutex> lock(mtx);
             if (input == '\e') {
                 char seq[2];
-                if (read(STDIN_FILENO, &seq[0], 1) == 0) continue;
-                else if (seq[0] != '[') {
+                if (read(STDIN_FILENO, &seq[0], 1) <= 0) {
+                    inputQueue.push('q');
+                    cv.notify_one();
+                } else if (seq[0] != '[') {
                     int ok = 1;
                     while (ok == 1) ok = read(STDIN_FILENO, &seq[0], 1);
                     continue;
                 } else {
                     read(STDIN_FILENO, &seq[1], 1);
                     if (seq[1] == 'A' || seq[1] == 'B' || seq[1] == 'C' || seq[1] == 'D') {
-                        inputQueue.push(input);
                         inputQueue.push(seq[1]);
                         cv.notify_one();
                     } else continue;
@@ -63,24 +64,19 @@ void Tetris::outputLoop() {
         while(!inputQueue.empty()) {
             char input = inputQueue.front();
             inputQueue.pop();
-            char key = 0;
-            if (input == '\e') {
-                key = inputQueue.front();
-                inputQueue.pop();
-            }
             lock.unlock();
             if (menu.isOpen()) {
                 if (input == '\n') menu.press("enter");
-                else if (input == 'k' || key == 'A') menu.press("up");
-                else if (input == 'j' || key == 'B') menu.press("down");
+                else if (input == 'k' || input == 'A') menu.press("up");
+                else if (input == 'j' || input == 'B') menu.press("down");
             } else if (!game->isFinished()) {
                 if (input == 'q') {
                     game->pause();
                     menu.open(paused);
-                } else if (key == 'C') game->moveRight();
-                else if (key == 'D') game->moveLeft();
-                else if (key == 'B') game->moveDown();
-                else if (key == 'A') game->rotate();
+                } else if (input == 'C') game->moveRight();
+                else if (input == 'D') game->moveLeft();
+                else if (input == 'B') game->softDrop();
+                else if (input == 'A' || input == 'x') game->rotate();
             }
             lock.lock();
         }
