@@ -53,15 +53,26 @@ void Game::addTetromino(char type) {
 }
 
 void Game::checkTetris() {
-    for (int i = 21; i > 1; i--) {
+    std::vector<int> rows = {};
+    for (int i = 21; i >= gd.highest; i--) {
         for (int j = 0; j < 10; j++) {
             if (gd.display[i][j].type == "empty") break;
             if (j == 9) {
-                for (int k = i; k > 1; k--) {
-                    gd.display[k] = gd.display[k-1];
+                rows.push_back(i);
+                for (int k = i; k < 9; k++) {
+                    gd.display[i][k].type = "empty";
+                    gd.display[i][k].color = "";
                 }
             }
         }
+    }
+    while (rows.size() != 0) {
+        int row = rows.back();
+        rows.pop_back();
+        for (int i = row; i >= gd.highest; i--) {
+            gd.display[i] = gd.display[i-1];
+        }
+        gd.highest++;
     }
 }
 
@@ -85,6 +96,7 @@ std::vector<char> Game::newTetrominos() {
 
 void Game::placeTetromino() {
     for (auto& cords : gd.curTet) {
+        if (cords.first < gd.highest) gd.highest = cords.first;
         gd.display[cords.first][cords.second].type = "old";
         gd.display[cords.first][cords.second].color = gd.color;
     }

@@ -92,6 +92,7 @@ private:
         std::string color;
         char type;
         int stage;
+        int highest = 22;
     } gd;
     bool paused = false;
     bool finished = false;
