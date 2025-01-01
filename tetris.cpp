@@ -76,6 +76,7 @@ void Tetris::outputLoop() {
                 } else if (input == 'C') game->moveRight();
                 else if (input == 'D') game->moveLeft();
                 else if (input == 'B') game->softDrop();
+                else if (input == ' ') game->hardDrop();
                 else if (input == 'A' || input == 'x') game->rotate();
             }
             lock.lock();

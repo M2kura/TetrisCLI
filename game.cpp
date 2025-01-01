@@ -198,18 +198,38 @@ void Game::moveLeft() {
     printTetromino();
 }
 
+bool Game::touchGroud() {
+    for (auto& cords : gd.curTet) {
+        if (cords.first == 21 ||
+        gd.display[cords.first+1][cords.second].old) return true;
+    }
+    return false;
+}
+
 void Game::softDrop() {
     if (finished) return;
     std::lock_guard<std::mutex> lock(displayMutex);
-    for (auto& cords : gd.curTet) {
-        if (cords.first == 21 ||
-        gd.display[cords.first+1][cords.second].old) return;
+    if (!touchGroud()) {
+        for (auto& cords : gd.curTet) cords.first++;
+        score++;
+        printDisplay(true);
+        printTetromino();
+        printScore();
     }
-    for (auto& cords : gd.curTet) cords.first++;
-    score++;
-    printDisplay(true);
-    printTetromino();
-    printScore();
+}
+
+void Game::hardDrop() {
+    if (finished) return;
+    std::lock_guard<std::mutex> lock(displayMutex);
+    if (!touchGroud()) {
+        while(!touchGroud()) {
+            for (auto& cords : gd.curTet) cords.first++;
+            score += 2;
+        }
+        printDisplay(true);
+        printTetromino();
+        printScore();
+    }
 }
 
 void Game::rotate() {

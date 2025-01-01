@@ -76,6 +76,7 @@ public:
     void moveRight();
     void moveLeft();
     void softDrop();
+    void hardDrop();
     void rotate();
     void update();
 
@@ -111,6 +112,7 @@ private:
     void printNext();
     void printTetromino();
     void placeTetromino();
+    bool touchGroud();
     void rotateI(int row, int col);
     void rotateT(int row, int col);
     void rotateS(int row, int col);
