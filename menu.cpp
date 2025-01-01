@@ -19,14 +19,13 @@ void Menu::press(const std::string key) {
             clearMenu();
             if (mode == paused) app->resumeGame();
             else if (mode == gameover) {
-                printCorners();
+                emptyScreen();
                 mode = home;
                 printMenu();
             } else if (mode == home) {
                 mode = paused;
-                printDisplayCorners();
+                printGameInterface();
                 app->newGame();
-                app->startGame();
             }
         } else if (onLine() == 3) {
             if (mode == home) app->exit();
@@ -52,7 +51,7 @@ void Menu::press(const std::string key) {
 void Menu::printMenu() {
     currentLine = 1;
     if (mode == home) {
-        printCorners();
+        emptyScreen();
         printAtPosition(4, 3, WHITE, "a) Start Game");
         printAtPosition(4, 5, WHITE, "c) Quit Tetris");
     } else if (mode == paused) {

@@ -17,6 +17,31 @@ void Game::printTetromino() {
     }
 }
 
+void Game::printNext() {
+    for (int i = 0; i < 2; i++) printAtPosition(42, 22+i, WHITE, " . . . .");
+    char piece = tetroQueue.front();
+    if (piece == 'I') printAtPosition(42, 22, CYAN, "[][][][]");
+    else if (piece == 'J') {
+        printAtPosition(42, 22, BLUE, "[]");
+        printAtPosition(42, 23, BLUE, "[][][]");
+    } else if (piece == 'L') {
+        printAtPosition(46, 22, ORANGE, "[]");
+        printAtPosition(42, 23, ORANGE, "[][][]");
+    } else if (piece == 'O') {
+        printAtPosition(44, 22, YELLOW, "[][]");
+        printAtPosition(44, 23, YELLOW, "[][]");
+    } else if (piece == 'S') {
+        printAtPosition(44, 22, GREEN, "[][]");
+        printAtPosition(42, 23, GREEN, "[][]");
+    } else if (piece == 'Z') {
+        printAtPosition(42, 22, RED, "[][]");
+        printAtPosition(44, 23, RED, "[][]");
+    } else if (piece == 'T') {
+        printAtPosition(44, 22, PURPLE, "[]");
+        printAtPosition(42, 23, PURPLE, "[][][]");
+    }
+}
+
 void Game::addTetromino(char type) {
     gd.type = type;
     gd.stage = 1;
@@ -102,6 +127,7 @@ void Game::placeTetromino() {
     }
     checkTetris();
     addTetromino(nextTetromino());
+    printNext();
     printDisplay(true);
 }
 
@@ -217,7 +243,7 @@ void Game::rotateT(int row, int col) {
     } else if (gd.stage == 4) {
         if (col < 9 && gd.display[row][col+1].type != "old") {
             gd.curTet = {{row-1,col},{row,col-1},{row,col},{row,col+1}};
-            gd.stage++;
+            gd.stage = 1;
         }
     }
 }

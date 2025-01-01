@@ -71,7 +71,6 @@ public:
     bool isPaused() {return paused;}
     bool isFinished() {return finished;}
 
-    void start() { printDisplay(true); }
     void pause();
     void resume();
     void moveRight();
@@ -84,6 +83,8 @@ public:
         gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, {"empty", ""}));
         gd.curTet = {};
         addTetromino(nextTetromino());
+        printDisplay(true);
+        printNext();
     };
 private:
     struct GD {
@@ -103,6 +104,7 @@ private:
     void addTetromino(char type);
     void dropTetromino();
     void printDisplay(bool dots);
+    void printNext();
     void printTetromino();
     void placeTetromino();
     void rotateI(int row, int col);
@@ -126,7 +128,6 @@ public:
     bool onPause() { return game && game->isPaused(); }
     void pauseGame() { game->pause(); }
     void resumeGame() { game->resume(); }
-    void startGame() { game->start(); }
 private:
     std::queue<char> inputQueue;
     std::mutex mtx;
@@ -145,8 +146,8 @@ private:
 void rawMode(bool start);
 std::string readFileToString(const std::string& filePath);
 void printAtPosition(int x, int y, const std::string& color, const std::string& text);
-void printCorners();
-void printDisplayCorners();
+void emptyScreen();
+void printGameInterface();
 void printMessage(int code);
 
 #endif

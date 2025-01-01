@@ -34,7 +34,7 @@ void printAtPosition(int x, int y, const std::string& color, const std::string& 
     std::cout << "\033[" << y << ";" << x << "H" << color << text << RESET << std::flush;
 }
 
-void printCorners() {
+void emptyScreen() {
     for (int i = 1; i < 35; i++) {
 	if (i == 1 || i == 34) {
 	    for (int j = 1; j < 55; j++) {
@@ -56,21 +56,26 @@ void printCorners() {
     }
 }
 
-void printDisplayCorners() {
+void printGameInterface() {
     for (int i = 0; i < 22; i++) {
 	if (i == 0 || i == 21) {
-	    for (int j = 0; j < 22; j++) {
-		if (j == 0 || j ==21) printAtPosition(17+j, 7+i, WHITE, "+");
-		else {
-		    if (i == 0) printAtPosition(17+j, 7+i, WHITE, "-");
-		    else printAtPosition(17+j, 7+i, WHITE, "=");
-		}
-	    }
+	    printAtPosition(17, 7+i, WHITE, "+                    +");
+	    if (i == 0) printAtPosition(18, 7, WHITE, "--------------------");
+	    else printAtPosition(18, 28, WHITE, "====================");
 	} else {
-	    printAtPosition(17, 7+i, WHITE, "|");
-	    printAtPosition(38, 7+i, WHITE, "|");
+	    printAtPosition(17, 7+i, WHITE, "|                    |");
 	}
     }
+    printAtPosition(41, 19, WHITE, "Next");
+    printAtPosition(41, 20, WHITE, "Tetromino:");
+    for (int i = 1; i <= 4; i++) {
+	if (i == 1 || i == 4) printAtPosition(41, 20+i, WHITE, "+--------+");
+	else printAtPosition(41, 20+i, WHITE, "|        |");
+    }
+    printAtPosition(41, 8, WHITE, "SCORE:");
+    printAtPosition(41, 9, WHITE, "0");
+    printAtPosition(41, 11, WHITE, "LEVEL:");
+    printAtPosition(41, 12, WHITE, "1");
 }
 
 void printMessage(int code) {
