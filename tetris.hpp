@@ -18,6 +18,7 @@
 # include <utility>
 # include <random>
 # include <algorithm>
+# include <cmath>
 
 #define RESET   "\033[0m"
 #define RED     "\033[38;5;196m"
@@ -122,6 +123,9 @@ private:
     void checkClear();
     void checkPerfectClear(int cleared);
     void printScore();
+    void printLines();
+    void printLevel();
+    int countTime();
     char nextTetromino();
     std::vector<char> newTetrominos();
 };

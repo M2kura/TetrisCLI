@@ -15,6 +15,14 @@ void Game::printScore() {
     printAtPosition(41, 9, WHITE, std::to_string(score));
 }
 
+void Game::printLines() {
+    printAtPosition(41, 15, WHITE, std::to_string(lines));
+}
+
+void Game::printLevel() {
+    printAtPosition(41, 12, WHITE, std::to_string(level));
+}
+
 void Game::printTetromino() {
     for (auto& cords : gd.curTet) {
         if (cords.first > 1) printAtPosition(18+(cords.second*2), 6+cords.first, gd.color, "[]");
@@ -97,10 +105,15 @@ void Game::checkClear() {
     }
     if (rows.size() != 0) {
         int cleared = rows.size();
+        lines += cleared;
         if (cleared == 1) score += 100 * level;
         else if (cleared == 2) score += 300 * level;
         else if (cleared == 3) score += 500 * level;
         else score += 800 * level;
+        if ((lines/10) == level) {
+            level++;
+            printLevel();
+        }
         while (rows.size() != 0) {
             int row = rows.back();
             rows.pop_back();
@@ -111,6 +124,7 @@ void Game::checkClear() {
         }
         checkPerfectClear(cleared);
         printScore();
+        printLines();
     }
 }
 
@@ -226,7 +240,7 @@ void Game::hardDrop() {
             for (auto& cords : gd.curTet) cords.first++;
             score += 2;
         }
-        printDisplay(true);
+        placeTetromino();
         printTetromino();
         printScore();
     }
@@ -407,6 +421,10 @@ bool Game::checkEnd() {
     return false;
 }
 
+int Game::countTime() {
+    return static_cast<int>(std::pow(0.8-((level-1)*0.007), level-1)*1000);
+}
+
 void Game::update() {
     {
     std::lock_guard<std::mutex> lock(displayMutex);
@@ -415,7 +433,7 @@ void Game::update() {
     printDisplay(true);
     printTetromino();
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::this_thread::sleep_for(std::chrono::milliseconds(countTime()));
 }
 
 void Game::pause() { 
