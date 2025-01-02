@@ -23,6 +23,7 @@ void Tetris::quitGame() {
 void Tetris::newGame() {
     if (game) delete game;
     game = new Game();
+    game->countDown();
 }
 
 void Tetris::inputLoop() {

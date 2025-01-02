@@ -54,6 +54,17 @@ void Game::printNext() {
     }
 }
 
+void Game::countDown() {
+    printAtPosition(27, 6, WHITE, "03");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    printAtPosition(27, 6, WHITE, "02");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    printAtPosition(27, 6, WHITE, "01");
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    printAtPosition(27, 6, WHITE, "  ");
+    paused = false;
+}
+
 void Game::addTetromino(char type) {
     gd.type = type;
     gd.stage = 1;
@@ -443,5 +454,5 @@ void Game::pause() {
 
 void Game::resume() { 
     printMessage(0);
-    paused = false;
+    countDown();
 }

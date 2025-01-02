@@ -74,6 +74,7 @@ public:
 
     void pause();
     void resume();
+    void countDown();
     void moveRight();
     void moveLeft();
     void softDrop();
@@ -97,7 +98,7 @@ private:
         int stage;
         int highest = 22;
     } gd;
-    bool paused = false;
+    bool paused = true;
     bool finished = false;
     std::vector<char> tetroQueue;
     int score = 0;
