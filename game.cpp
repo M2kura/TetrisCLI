@@ -12,15 +12,15 @@ void Game::printDisplay(bool dots) {
 }
 
 void Game::printScore() {
-    printAtPosition(41, 9, WHITE, std::to_string(score));
+    printAtPosition(41, 15, WHITE, std::to_string(score));
 }
 
 void Game::printLines() {
-    printAtPosition(41, 15, WHITE, std::to_string(lines));
+    printAtPosition(41, 21, WHITE, std::to_string(lines));
 }
 
 void Game::printLevel() {
-    printAtPosition(41, 12, WHITE, std::to_string(level));
+    printAtPosition(41, 18, WHITE, std::to_string(level));
 }
 
 void Game::printTetromino() {
@@ -30,27 +30,29 @@ void Game::printTetromino() {
 }
 
 void Game::printNext() {
-    for (int i = 0; i < 2; i++) printAtPosition(42, 22+i, WHITE, " . . . .");
-    char piece = tetroQueue.front();
-    if (piece == 'I') printAtPosition(42, 22, CYAN, "[][][][]");
-    else if (piece == 'J') {
-        printAtPosition(42, 22, BLUE, "[]");
-        printAtPosition(42, 23, BLUE, "[][][]");
-    } else if (piece == 'L') {
-        printAtPosition(46, 22, ORANGE, "[]");
-        printAtPosition(42, 23, ORANGE, "[][][]");
-    } else if (piece == 'O') {
-        printAtPosition(44, 22, YELLOW, "[][]");
-        printAtPosition(44, 23, YELLOW, "[][]");
-    } else if (piece == 'S') {
-        printAtPosition(44, 22, GREEN, "[][]");
-        printAtPosition(42, 23, GREEN, "[][]");
-    } else if (piece == 'Z') {
-        printAtPosition(42, 22, RED, "[][]");
-        printAtPosition(44, 23, RED, "[][]");
-    } else if (piece == 'T') {
-        printAtPosition(44, 22, PURPLE, "[]");
-        printAtPosition(42, 23, PURPLE, "[][][]");
+    for (int i = 1; i < 18; i++) if (i % 3 != 0) printAtPosition(6, 9+i, WHITE, " . . . .");
+    for (int i = 0; i < 6; i++) {
+        char piece = tetroQueue[i];
+        if (piece == 'I') printAtPosition(6, 11+3*i, CYAN, "[][][][]");
+        else if (piece == 'J') {
+            printAtPosition(6, 10+3*i, BLUE, "[]");
+            printAtPosition(6, 11+3*i, BLUE, "[][][]");
+        } else if (piece == 'L') {
+            printAtPosition(10, 10+3*i, ORANGE, "[]");
+            printAtPosition(6, 11+3*i, ORANGE, "[][][]");
+        } else if (piece == 'O') {
+            printAtPosition(8, 10+3*i, YELLOW, "[][]");
+            printAtPosition(8, 11+3*i, YELLOW, "[][]");
+        } else if (piece == 'S') {
+            printAtPosition(8, 10+3*i, GREEN, "[][]");
+            printAtPosition(6, 11+3*i, GREEN, "[][]");
+        } else if (piece == 'Z') {
+            printAtPosition(6, 10+3*i, RED, "[][]");
+            printAtPosition(8, 11+3*i, RED, "[][]");
+        } else if (piece == 'T') {
+            printAtPosition(8, 10+3*i, PURPLE, "[]");
+            printAtPosition(6, 11+3*i, PURPLE, "[][][]");
+        }
     }
 }
 
@@ -156,7 +158,7 @@ void Game::checkPerfectClear(int cleared) {
 char Game::nextTetromino() {
     char piece = tetroQueue.front();
     tetroQueue.erase(tetroQueue.begin());
-    if (tetroQueue.size() == 1) {
+    if (tetroQueue.size() == 6) {
         std::vector<char> vec = newTetrominos();
         tetroQueue.insert(tetroQueue.end(), vec.begin(), vec.end());
     }

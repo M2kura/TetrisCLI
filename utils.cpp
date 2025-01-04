@@ -66,22 +66,22 @@ void printGameInterface() {
 	    printAtPosition(17, 7+i, WHITE, "|                    |");
 	}
     }
-    printAtPosition(41, 19, WHITE, "Next");
-    printAtPosition(41, 20, WHITE, "Tetromino:");
-    for (int i = 1; i <= 4; i++) {
-	if (i == 1 || i == 4) printAtPosition(41, 20+i, WHITE, "+--------+");
-	else printAtPosition(41, 20+i, WHITE, "|        |");
+    printAtPosition(8, 8, WHITE, "NEXT");
+    for (int i = 0; i <= 18; i++) {
+	if (i == 0 || i == 18) printAtPosition(5, 9+i, WHITE, "+--------+");
+	else if (i % 3 == 0) printAtPosition(5, 9+i, WHITE, "|--------|");
+	else printAtPosition(5, 9+i, WHITE, "|        |");
     }
-    printAtPosition(41, 8, WHITE, "SCORE:");
-    printAtPosition(41, 9, WHITE, "0");
-    printAtPosition(41, 11, WHITE, "LEVEL:");
-    printAtPosition(41, 12, WHITE, "1");
-    printAtPosition(41, 14, WHITE, "LINES:");
+    printAtPosition(41, 14, WHITE, "SCORE:");
     printAtPosition(41, 15, WHITE, "0");
-    printAtPosition(5, 8, WHITE, "HOLD:");
+    printAtPosition(41, 17, WHITE, "LEVEL:");
+    printAtPosition(41, 18, WHITE, "1");
+    printAtPosition(41, 20, WHITE, "LINES:");
+    printAtPosition(41, 21, WHITE, "0");
+    printAtPosition(44, 8, WHITE, "HOLD");
     for (int i = 1; i <= 4; i++) {
-	if (i == 1 || i == 4) printAtPosition(5, 8+i, WHITE, "+--------+");
-	else printAtPosition(5, 8+i, WHITE, "| . . . .|");
+	if (i == 1 || i == 4) printAtPosition(41, 8+i, WHITE, "+--------+");
+	else printAtPosition(41, 8+i, WHITE, "| . . . .|");
     }
 }
 
