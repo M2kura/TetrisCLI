@@ -78,6 +78,11 @@ void printGameInterface() {
     printAtPosition(41, 12, WHITE, "1");
     printAtPosition(41, 14, WHITE, "LINES:");
     printAtPosition(41, 15, WHITE, "0");
+    printAtPosition(5, 8, WHITE, "HOLD:");
+    for (int i = 1; i <= 4; i++) {
+	if (i == 1 || i == 4) printAtPosition(5, 8+i, WHITE, "+--------+");
+	else printAtPosition(5, 8+i, WHITE, "| . . . .|");
+    }
 }
 
 void printMessage(int code) {

@@ -79,7 +79,7 @@ public:
     void moveLeft();
     void softDrop();
     void hardDrop();
-    void rotate();
+    void rotate(bool right);
     void update();
 
     Game(): tetroQueue(newTetrominos()) {
@@ -105,6 +105,7 @@ private:
     int level = 1;
     int combo = -1;
     int lines = 0;
+    char hold = ' ';
     std::mutex displayMutex;
 
     bool checkEnd();
@@ -115,12 +116,12 @@ private:
     void printTetromino();
     void placeTetromino();
     bool touchGroud();
-    void rotateI(int row, int col);
-    void rotateT(int row, int col);
-    void rotateS(int row, int col);
-    void rotateZ(int row, int col);
-    void rotateJ(int row, int col);
-    void rotateL(int row, int col);
+    void rotateI(int row, int col, bool right);
+    void rotateT(int row, int col, bool right);
+    void rotateS(int row, int col, bool right);
+    void rotateZ(int row, int col, bool right);
+    void rotateJ(int row, int col, bool right);
+    void rotateL(int row, int col, bool right);
     void checkClear();
     void checkPerfectClear(int cleared);
     void printScore();
