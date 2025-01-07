@@ -118,7 +118,7 @@ private:
     void printHold();
     void printTetromino();
     void placeTetromino();
-    bool touchGroud();
+    bool touchGround();
     void rotateI(int row, int col, bool right);
     void rotateT(int row, int col, bool right);
     void rotateS(int row, int col, bool right);

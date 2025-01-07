@@ -27,6 +27,27 @@ void Game::printTetromino() {
     for (auto& cords : gd.curTet) {
         if (cords.first > 1) printAtPosition(18+(cords.second*2), 6+cords.first, gd.color, "[]");
     }
+    if (!touchGround()) {
+        auto ghost = gd.curTet;
+        bool touch = false;
+        while (!touch) {
+            for (auto& cords : ghost) cords.first++;
+            for (auto& cords : ghost) {
+                if (cords.first == 21 ||
+                gd.display[cords.first+1][cords.second].old) touch = true;
+            }
+        }
+        for (auto& cords : ghost) {
+            bool print = true;
+            for (auto& cordsCur : gd.curTet) {
+                if (cords.first == cordsCur.first && cords.second == cordsCur.second) {
+                    print = false;
+                    break;
+                }
+            }
+            if (print) printAtPosition(18+(cords.second*2), 6+cords.first, WHITE, "88");
+        }
+    }
 }
 
 void Game::printNext() {
@@ -268,7 +289,7 @@ void Game::moveLeft() {
     printTetromino();
 }
 
-bool Game::touchGroud() {
+bool Game::touchGround() {
     for (auto& cords : gd.curTet) {
         if (cords.first == 21 ||
         gd.display[cords.first+1][cords.second].old) return true;
@@ -279,7 +300,7 @@ bool Game::touchGroud() {
 void Game::softDrop() {
     if (finished) return;
     std::lock_guard<std::mutex> lock(displayMutex);
-    if (!touchGroud()) {
+    if (!touchGround()) {
         for (auto& cords : gd.curTet) cords.first++;
         score++;
         printDisplay(true);
@@ -291,8 +312,8 @@ void Game::softDrop() {
 void Game::hardDrop() {
     if (finished) return;
     std::lock_guard<std::mutex> lock(displayMutex);
-    if (!touchGroud()) {
-        while(!touchGroud()) {
+    if (!touchGround()) {
+        while(!touchGround()) {
             for (auto& cords : gd.curTet) cords.first++;
             score += 2;
         }
