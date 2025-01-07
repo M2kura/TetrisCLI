@@ -110,7 +110,7 @@ private:
 
     bool checkEnd();
     void addTetromino(char type);
-    void dropTetromino();
+    bool dropTetromino();
     void printDisplay(bool dots);
     void printNext();
     void printTetromino();
