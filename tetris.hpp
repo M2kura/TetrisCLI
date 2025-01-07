@@ -80,6 +80,7 @@ public:
     void softDrop();
     void hardDrop();
     void rotate(bool right);
+    void hold();
     void update();
 
     Game(): tetroQueue(newTetrominos()) {
@@ -96,6 +97,8 @@ private:
         std::string color;
         char type;
         int stage;
+        char hold = ' ';
+        bool canHold = true;
         int highest = 22;
     } gd;
     bool paused = true;
@@ -105,7 +108,6 @@ private:
     int level = 1;
     int combo = -1;
     int lines = 0;
-    char hold = ' ';
     std::mutex displayMutex;
 
     bool checkEnd();
@@ -113,6 +115,7 @@ private:
     bool dropTetromino();
     void printDisplay(bool dots);
     void printNext();
+    void printHold();
     void printTetromino();
     void placeTetromino();
     bool touchGroud();

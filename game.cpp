@@ -56,6 +56,30 @@ void Game::printNext() {
     }
 }
 
+void Game::printHold() {
+	for (int i = 0; i < 2; i++) printAtPosition(41, 10+i, WHITE, "| . . . .|");
+    if (gd.hold == 'I') printAtPosition(42, 11, CYAN, "[][][][]");
+    else if (gd.hold == 'J') {
+        printAtPosition(42, 10, BLUE, "[]");
+        printAtPosition(42, 11, BLUE, "[][][]");
+    } else if (gd.hold == 'L') {
+        printAtPosition(46, 10, ORANGE, "[]");
+        printAtPosition(42, 11, ORANGE, "[][][]");
+    } else if (gd.hold == 'O') {
+        printAtPosition(44, 10, YELLOW, "[][]");
+        printAtPosition(44, 11, YELLOW, "[][]");
+    } else if (gd.hold == 'S') {
+        printAtPosition(44, 10, GREEN, "[][]");
+        printAtPosition(42, 11, GREEN, "[][]");
+    } else if (gd.hold == 'Z') {
+        printAtPosition(42, 10, RED, "[][]");
+        printAtPosition(44, 11, RED, "[][]");
+    } else if (gd.hold == 'T') {
+        printAtPosition(44, 10, PURPLE, "[]");
+        printAtPosition(42, 11, PURPLE, "[][][]");
+    }
+}
+
 void Game::countDown() {
     printAtPosition(27, 6, WHITE, "03");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
@@ -192,6 +216,7 @@ void Game::placeTetromino() {
         dropTetromino();
         printNext();
         printDisplay(true);
+        if (!gd.canHold) gd.canHold = true;
     }
 }
 
@@ -277,6 +302,25 @@ void Game::hardDrop() {
     }
 }
 
+void Game::hold() {
+    if (gd.canHold && !finished) {
+        std::lock_guard<std::mutex> lock(displayMutex);
+        if (gd.hold == ' ') {
+            gd.hold = gd.type;
+            addTetromino(nextTetromino());
+            dropTetromino();
+            printNext();
+            printHold();
+        } else {
+            char cur = gd.type;
+            addTetromino(gd.hold);
+            dropTetromino();
+            gd.hold = cur;
+            printHold();
+        }
+        gd.canHold = false;
+    }
+}
 
 void Game::rotate(bool right) {
     if (finished) return;
