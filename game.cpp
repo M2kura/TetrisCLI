@@ -359,7 +359,7 @@ void Game::rotate(bool right) {
         if (gd.type == 'I' && row < 20 && row > 0 && !gd.display[row+1][col-i].old &&
             !gd.display[row+2][col-i].old && !gd.display[row-1][col-i].old) {
             canRotate = true;
-            gd.curTet = {{row-1,col-i},{row,col-i},{row+1,col-i},{row+2,col-i}};
+            gd.curTet = {{row-1+i+i+i,col-i},{row+i,col-i},{row+1-i,col-i},{row+2-i-i-i,col-i}};
         } else if (gd.type == 'T' && row < 21 && !gd.display[row+1][col].old) {
             canRotate = true;
             gd.curTet = {{row,col+1-i-i},{row-1,col},{row,col},{row+1,col}};
@@ -379,7 +379,7 @@ void Game::rotate(bool right) {
             && !gd.display[row+1][col].old && !gd.display[row-1][col].old) {
             canRotate = true;
             gd.curTet = {{row+1-i-i,col+1-i-i},{row+1-i-i,col},{row,col},{row-1+i+i,col}};
-        }
+        } else canRotate = tryKick(right, row, col);
         if (canRotate) {
             if (right) {
                 gd.stage++;
@@ -393,7 +393,7 @@ void Game::rotate(bool right) {
         if (gd.type == 'I' && col < 9 && col > 1 && !gd.display[row-i][col+1].old &&
             !gd.display[row-i][col-1].old && !gd.display[row-i][col-2].old) {
             canRotate = true;
-            gd.curTet = {{row-i,col+1},{row-i,col},{row-i,col-1},{row-i,col-2}};
+            gd.curTet = {{row-i,col+1-i-i-i},{row-i,col-i},{row-i,col-1+i},{row-i,col-2+i+i+i}};
         } else if (gd.type == 'T' && col > 0 && !gd.display[row][col-1].old) {
             canRotate = true;
             gd.curTet = {{row+1-i-i,col},{row,col+1},{row,col},{row,col-1}};
@@ -413,7 +413,7 @@ void Game::rotate(bool right) {
             && !gd.display[row][col-1].old && !gd.display[row][col+1].old) {
             canRotate = true;
             gd.curTet = {{row+1-i-i,col-1+i+i},{row,col-1+i+i},{row,col},{row,col+1-i-i}};
-        }
+        } else canRotate = tryKick(right, row, col);
         if (canRotate) {
             if (right) {
                 gd.stage++;
@@ -427,7 +427,7 @@ void Game::rotate(bool right) {
         if (gd.type == 'I' && row < 21 && row > 1 && !gd.display[row+1][col+i].old &&
             !gd.display[row-2][col+i].old && !gd.display[row-1][col+i].old) {
             canRotate = true;
-            gd.curTet = {{row+1,col+i},{row,col+i},{row-1,col+i},{row-2,col+i}};
+            gd.curTet = {{row+1-i-i-i,col+i},{row-i,col+i},{row-1+i,col+i},{row-2+i+i+i,col+i}};
         } else if (gd.type == 'T' && row > 0 && !gd.display[row-1][col].old) {
             canRotate = true;
             gd.curTet = {{row,col-1+i+i},{row+1,col},{row,col},{row-1,col}};
@@ -447,7 +447,7 @@ void Game::rotate(bool right) {
             && !gd.display[row-1][col].old && !gd.display[row+1][col].old) {
             canRotate = true;
             gd.curTet = {{row-1+i+i,col-1+i+i},{row-1+i+i,col},{row,col},{row+1-i-i,col}};
-        }
+        } else canRotate = tryKick(right, row, col);
         if (canRotate) {
             if (right) {
                 gd.stage++;
@@ -461,7 +461,7 @@ void Game::rotate(bool right) {
         if (gd.type == 'I' && col < 8 && col > 0 && !gd.display[row+i][col+1].old &&
             !gd.display[row+i][col-1].old && !gd.display[row+i][col+2].old) {
             canRotate = true;
-            gd.curTet = {{row+i,col-1},{row+i,col},{row+i,col+1},{row+i,col+2}};
+            gd.curTet = {{row+i,col-1+i+i+i},{row+i,col+i},{row+i,col+1-i},{row+i,col+2-i-i-i}};
         } else if (gd.type == 'T' && col < 9 && !gd.display[row][col+1].old) {
             canRotate = true;
             gd.curTet = {{row-1+i+i,col},{row,col-1},{row,col},{row,col+1}};
@@ -481,7 +481,7 @@ void Game::rotate(bool right) {
             && !gd.display[row][col+1].old && !gd.display[row][col-1].old) {
             canRotate = true;
             gd.curTet = {{row-1+i+i,col+1-i-i},{row,col+1-i-i},{row,col},{row,col-1+i+i}};
-        }
+        } else canRotate = tryKick(right, row, col);
         if (canRotate) {
             if (right) {
                 gd.stage = 1;
@@ -494,6 +494,175 @@ void Game::rotate(bool right) {
     }
     printDisplay(true);
     printTetromino();
+}
+
+bool Game::tryKick(bool right, int row, int col) {
+    if (gd.type == 'I') {
+        if (gd.stage == 1 && right) {
+            // {{row-1,col},{row,col},{row+1,col},{row+2,col}};
+            if (row+2 <= 21 && !gd.display[row-1][col-2].old && !gd.display[row][col-2].old
+                && !gd.display[row+1][col-2].old && !gd.display[row+2][col-2].old) {
+                gd.curTet = {{row-1,col-2},{row,col-2},{row+1,col-2},{row+2,col-2}};
+                return true;
+            } else if (row+2 <= 21 && !gd.display[row-1][col+1].old && !gd.display[row][col+1].old
+                && !gd.display[row+1][col+1].old && !gd.display[row+2][col+1].old) {
+                gd.curTet = {{row-1,col+1},{row,col+1},{row+1,col+1},{row+2,col+1}};
+                return true;
+            } else if (row+3 <= 21 && !gd.display[row][col-2].old && !gd.display[row+1][col-2].old
+                && !gd.display[row+2][col-2].old && !gd.display[row+3][col-2].old) {
+                gd.curTet = {{row,col-2},{row+1,col-2},{row+2,col-2},{row+3,col-2}};
+                return true;
+            } else if (row-3 >= 0 && !gd.display[row-3][col+1].old && !gd.display[row-2][col+1].old
+                && !gd.display[row-1][col+1].old && !gd.display[row][col+1].old) {
+                gd.curTet = {{row-3,col+1},{row-2,col+1},{row-1,col+1},{row,col+1}};
+                return true;
+            }
+        } else if (gd.stage == 1) {
+            // {{row+2,col-1},{row+1,col-1},{row,col-1},{row-1,col-1}};
+            if (row+2 <= 21 && !gd.display[row+2][col-2].old && !gd.display[row+1][col-2].old
+                && !gd.display[row][col-2].old && !gd.display[row-1][col-2].old) {
+                gd.curTet = {{row+2,col-2},{row+1,col-2},{row,col-2},{row-1,col-2}};
+                return true;
+            } else if (row+2 <= 21 && !gd.display[row+2][col+1].old && !gd.display[row+1][col+1].old
+                && !gd.display[row][col+1].old && !gd.display[row-1][col+1].old) {
+                gd.curTet = {{row+2,col+1},{row+1,col+1},{row,col+1},{row-1,col+1}};
+                return true;
+            } else if (row-3 >= 0 && !gd.display[row][col-2].old && !gd.display[row-1][col-2].old 
+                && !gd.display[row-2][col-2].old && !gd.display[row-3][col-2].old) {
+                gd.curTet = {{row,col-2},{row-1,col-2},{row-2,col-2},{row-3,col-2}};
+                return true;
+            } else if (row+3 <= 21 && !gd.display[row+3][col+1].old && !gd.display[row+2][col+1].old
+                && !gd.display[row+1][col+1].old && !gd.display[row][col+1].old) {
+                gd.curTet = {{row+3,col+1},{row+2,col+1},{row+1,col+1},{row,col+1}};
+                return true;
+            }
+        } else if (gd.stage == 2 && right) {
+            // {{row,col+1},{row,col},{row,col-1},{row,col-2}};
+            if (col-3 >= 0 && !gd.display[row][col].old && !gd.display[row][col-1].old
+                && !gd.display[row][col-2].old && !gd.display[row][col-3].old) {
+                gd.curTet = {{row,col},{row,col-1},{row,col-2},{row,col-3}};
+                return true;
+            } else if (col+3 <= 9 && !gd.display[row][col+3].old && !gd.display[row][col+2].old
+                && !gd.display[row][col+1].old && !gd.display[row][col].old) {
+                gd.curTet = {{row,col+3},{row,col+2},{row,col+1},{row,col}};
+                return true;
+            } else if (col-3 >= 0 && !gd.display[row-2][col].old && !gd.display[row-2][col-1].old
+                && !gd.display[row-2][col-2].old && !gd.display[row-2][col-3].old) {
+                gd.curTet = {{row-2,col},{row-2,col-1},{row-2,col-2},{row-2,col-3}};
+                return true;
+            } else if (col+3 <= 9 && !gd.display[row+1][col+3].old && !gd.display[row+1][col+2].old
+                && !gd.display[row+1][col+1].old && !gd.display[row+1][col].old) {
+                gd.curTet = {{row+1,col+3},{row+1,col+2},{row+1,col+1},{row+1,col}};
+                return true;
+            }
+        } else if (gd.stage == 2) {
+            // {{row-1,col-2},{row-1,col-1},{row-1,col},{row-1,col+1}};
+            if (col+3 <= 9 && !gd.display[row-1][col].old && !gd.display[row-1][col+1].old
+                && !gd.display[row-1][col+2].old && !gd.display[row-1][col+3].old) {
+                gd.curTet = {{row-1,col},{row-1,col+1},{row-1,col+2},{row-1,col+3}};
+                return true;
+            } else if (col-3 >= 0 && !gd.display[row-1][col-3].old && !gd.display[row-1][col-2].old
+                && !gd.display[row-1][col-1].old && !gd.display[row-1][col].old){
+                gd.curTet = {{row-1,col-3},{row-1,col-2},{row-1,col-1},{row-1,col}};
+                return true;
+            } else if (col+3 <= 9 && !gd.display[row-2][col].old && !gd.display[row-2][col+1].old
+                && !gd.display[row-2][col+2].old && !gd.display[row-2][col+3].old) {
+                gd.curTet = {{row-2,col},{row-2,col+1},{row-2,col+2},{row-2,col+3}};
+                return true;
+            } else if (col-3 >= 0 && !gd.display[row+1][col-3].old && !gd.display[row+1][col-2].old
+                && !gd.display[row+1][col-1].old && !gd.display[row+1][col].old) {
+                gd.curTet = {{row+1,col-3},{row+1,col-2},{row+1,col-1},{row+1,col}};
+                return true;
+            }
+        } else if (gd.stage == 3 && right) {
+            // {{row+1,col},{row,col},{row-1,col},{row-2,col}};
+            if (row-2 >= 0 && !gd.display[row+1][col+2].old && !gd.display[row][col+2].old
+                && !gd.display[row-1][col+2].old && !gd.display[row-2][col+2].old) {
+                gd.curTet = {{row+1,col+2},{row,col+2},{row-1,col+2},{row-2,col+2}};
+                return true;
+            } else if (row-2 >= 0 && !gd.display[row+1][col-1].old && !gd.display[row][col-1].old
+                && !gd.display[row-1][col-1].old && !gd.display[row-2][col-1].old) {
+                gd.curTet = {{row+1,col-1},{row,col-1},{row-1,col-1},{row-2,col-1}};
+                return true;
+            } else if (row-3 >= 0 && !gd.display[row][col+2].old && !gd.display[row-1][col+2].old
+                && !gd.display[row-2][col+2].old && !gd.display[row-3][col+2].old) {
+                gd.curTet = {{row,col+2},{row-1,col+2},{row-2,col+2},{row-3,col+2}};
+                return true;
+            } else if (row+3 <= 21 && !gd.display[row+3][col-1].old && !gd.display[row+2][col-1].old
+                && !gd.display[row+1][col-1].old && !gd.display[row][col-1].old) {
+                gd.curTet = {{row+3,col-1},{row+2,col-1},{row+1,col-1},{row,col-1}};
+                return true;
+            }
+        } else if (gd.stage == 3) {
+            // {{row-2,col+1},{row-1,col+1},{row,col+1},{row+1,col+1}};
+            if (row-2 >= 0 && !gd.display[row-2][col+2].old && !gd.display[row-1][col+2].old
+                && !gd.display[row][col+2].old && !gd.display[row+1][col+2].old) {
+                gd.curTet = {{row-2,col+2},{row-1,col+2},{row,col+2},{row+1,col+2}};
+                return true;
+            } else if (row-2 >= 0 && !gd.display[row-2][col-1].old && !gd.display[row-1][col-1].old
+                && !gd.display[row][col-1].old && !gd.display[row+1][col-1].old) {
+                gd.curTet = {{row-2,col-1},{row-1,col-1},{row,col-1},{row+1,col-1}};
+                return true;
+            } else if (row+3 <= 21 && !gd.display[row][col+2].old && !gd.display[row+1][col+2].old 
+                && !gd.display[row+2][col+2].old && !gd.display[row+3][col+2].old) {
+                gd.curTet = {{row,col+2},{row+1,col+2},{row+2,col+2},{row+3,col+2}};
+                return true;
+            } else if (row-3 >= 0 && !gd.display[row-3][col-1].old && !gd.display[row-2][col-1].old
+                && !gd.display[row-1][col-1].old && !gd.display[row][col-1].old) {
+                gd.curTet = {{row-3,col-1},{row-2,col-1},{row-1,col-1},{row,col-1}};
+                return true;
+            }
+        } else if (gd.stage == 4 && right) {
+            // {{row,col-1},{row,col},{row,col+1},{row,col+2}};
+            if (col+3 <= 9 && !gd.display[row][col].old && !gd.display[row][col+1].old
+                && !gd.display[row][col+2].old && !gd.display[row][col+3].old) {
+                gd.curTet = {{row,col},{row,col+1},{row,col+2},{row,col+3}};
+                return true;
+            } else if (col-3 >= 0 && !gd.display[row][col-3].old && !gd.display[row][col-2].old
+                && !gd.display[row][col-1].old && !gd.display[row][col].old) {
+                gd.curTet = {{row,col-3},{row,col-2},{row,col-1},{row,col}};
+                return true;
+            } else if (col+3 <= 9 && !gd.display[row+2][col].old && !gd.display[row+2][col+1].old
+                && !gd.display[row+2][col+2].old && !gd.display[row+2][col+3].old) {
+                gd.curTet = {{row+2,col},{row+2,col+1},{row+2,col+2},{row+2,col+3}};
+                return true;
+            } else if (col-3 >= 0 && !gd.display[row-1][col-3].old && !gd.display[row-1][col-2].old
+                && !gd.display[row-1][col-1].old && !gd.display[row-1][col].old) {
+                gd.curTet = {{row-1,col-3},{row-1,col-2},{row-1,col-1},{row-1,col}};
+                return true;
+            }
+        } else {
+            // {{row+1,col+2},{row+1,col+1},{row+1,col},{row+1,col-1}};
+            if (col-3 >= 0 && !gd.display[row+1][col].old && !gd.display[row+1][col-1].old
+                && !gd.display[row+1][col-2].old && !gd.display[row+1][col-3].old) {
+                gd.curTet = {{row+1,col},{row+1,col-1},{row+1,col-2},{row+1,col-3}};
+                return true;
+            } else if (col+3 <= 9 && !gd.display[row+1][col+3].old && !gd.display[row+1][col+2].old
+                && !gd.display[row+1][col+1].old && !gd.display[row+1][col].old){
+                gd.curTet = {{row+1,col+3},{row+1,col+2},{row+1,col+1},{row+1,col}};
+                return true;
+            } else if (col-3 >= 0 && !gd.display[row+2][col].old && !gd.display[row+2][col-1].old
+                && !gd.display[row+2][col-2].old && !gd.display[row+2][col-3].old) {
+                gd.curTet = {{row+2,col},{row+2,col-1},{row+2,col-2},{row+2,col-3}};
+                return true;
+            } else if (col+3 <= 9 && !gd.display[row-1][col+3].old && !gd.display[row-1][col+2].old
+                && !gd.display[row-1][col+1].old && !gd.display[row-1][col].old) {
+                gd.curTet = {{row-1,col+3},{row-1,col+2},{row-1,col+1},{row-1,col}};
+                return true;
+            }
+        }
+    } else {
+        if (gd.stage == 1 && right) {
+        } else if (gd.stage == 1) {
+        } else if (gd.stage == 2 && right) {
+        } else if (gd.stage == 2) {
+        } else if (gd.stage == 3 && right) {
+        } else if (gd.stage == 3) {
+        } else if (gd.stage == 4 && right) {
+        } else {
+        }
+    }
+    return false;
 }
 
 bool Game::checkEnd() {
