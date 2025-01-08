@@ -653,13 +653,163 @@ bool Game::tryKick(bool right, int row, int col) {
         }
     } else {
         if (gd.stage == 1 && right) {
+            if (gd.type == 'T') {
+            // {{row,col+1},{row-1,col},{row,col},{row+1,col}};
+                if (row+1 <= 21 && !gd.display[row][col].old && !gd.display[row-1][col-1].old
+                    && !gd.display[row][col-1].old && !gd.display[row+1][col-1].old) {
+                    gd.curTet = {{row,col},{row-1,col-1},{row,col-1},{row+1,col-1}};
+                    return true;
+                } else if (row-2 >= 0 && !gd.display[row-1][col].old && !gd.display[row-2][col-1].old
+                    && !gd.display[row-1][col-1].old && !gd.display[row][col-1].old) {
+                    gd.curTet = {{row-1,col},{row-2,col-1},{row-1,col-1},{row,col-1}};
+                    return true;
+                } else if (row+3 <= 9 && !gd.display[row+2][col].old && !gd.display[row+1][col-1].old
+                    && !gd.display[row+2][col-1].old && !gd.display[row+3][col-1].old) {
+                    gd.curTet = {{row+2,col},{row+1,col-1},{row+2,col-1},{row+3,col-1}};
+                    return true;
+                }
+            }
         } else if (gd.stage == 1) {
+            if (gd.type == 'T') {
+            // {{row,col-1},{row-1,col},{row,col},{row+1,col}};
+                if (row+1 <= 21 && !gd.display[row][col].old && !gd.display[row-1][col+1].old
+                    && !gd.display[row][col+1].old && !gd.display[row+1][col+1].old) {
+                    gd.curTet = {{row,col},{row-1,col+1},{row,col+1},{row+1,col+1}};
+                    return true;
+                } else if (row-2 >= 0 && !gd.display[row-1][col].old && !gd.display[row-2][col+1].old
+                    && !gd.display[row-1][col+1].old && !gd.display[row][col+1].old) {
+                    gd.curTet = {{row-1,col},{row-2,col+1},{row-1,col+1},{row,col+1}};
+                    return true;
+                } else if (row+3 <= 9 && !gd.display[row+2][col].old && !gd.display[row+1][col+1].old
+                    && !gd.display[row+2][col+1].old && !gd.display[row+3][col+1].old) {
+                    gd.curTet = {{row+2,col},{row+1,col+1},{row+2,col+1},{row+3,col+1}};
+                    return true;
+                }
+            }
         } else if (gd.stage == 2 && right) {
+            if (gd.type == 'T') {
+            // {{row+1,col},{row,col+1},{row,col},{row,col-1}};
+                if (col+2 <= 9 && !gd.display[row+1][col+1].old && !gd.display[row][col+2].old
+                    && !gd.display[row][col+1].old && !gd.display[row][col].old) {
+                    gd.curTet = {{row+1,col+1},{row,col+2},{row,col+1},{row,col}};
+                    return true;
+                } else if (col+2 <= 9 && row+2 <= 21
+                    && !gd.display[row+2][col+1].old && !gd.display[row+1][col+2].old
+                    && !gd.display[row+1][col+1].old && !gd.display[row+1][col].old) {
+                    gd.curTet = {{row+2,col+1},{row+1,col+2},{row+1,col+1},{row+1,col}};
+                    return true;
+                } else if (row-2 >= 0 && !gd.display[row-1][col].old && !gd.display[row-2][col+1].old
+                    && !gd.display[row-2][col].old && !gd.display[row-2][col-1].old) {
+                    gd.curTet = {{row-1,col},{row-2,col+1},{row-2,col},{row-2,col-1}};
+                    return true;
+                } else if (row-2 >= 0 && col+2 <= 9
+                    && !gd.display[row-1][col+1].old && !gd.display[row-2][col+2].old
+                    && !gd.display[row-2][col+1].old && !gd.display[row-2][col].old) {
+                    gd.curTet = {{row-1,col+1},{row-2,col+2},{row-2,col+1},{row-2,col}};
+                    return true;
+                }
+            }
         } else if (gd.stage == 2) {
+            if (gd.type == 'T') {
+            // {{row-1,col},{row,col+1},{row,col},{row,col-1}};
+                if (col+2 <= 9 && !gd.display[row-1][col+1].old && !gd.display[row][col+2].old
+                    && !gd.display[row][col+1].old && !gd.display[row][col].old) {
+                    gd.curTet = {{row-1,col+1},{row,col+2},{row,col+1},{row,col}};
+                    return true;
+                } else if (col+2 <= 9 && !gd.display[row][col+1].old && !gd.display[row+1][col+2].old
+                    && !gd.display[row+1][col+1].old && !gd.display[row+1][col].old) {
+                    gd.curTet = {{row,col+1},{row+1,col+2},{row+1,col+1},{row+1,col}};
+                    return true;
+                } else if (row-3 >= 0 && !gd.display[row-3][col].old && !gd.display[row-2][col+1].old
+                    && !gd.display[row-2][col].old && !gd.display[row-2][col-1].old) {
+                    gd.curTet = {{row-3,col},{row-2,col+1},{row-2,col},{row-2,col-1}};
+                    return true;
+                } else if (row-3 >= 0 && col+2 <= 9
+                    && !gd.display[row-3][col+1].old && !gd.display[row-2][col+2].old
+                    && !gd.display[row-2][col+1].old && !gd.display[row-2][col].old) {
+                    gd.curTet = {{row-3,col+1},{row-2,col+2},{row-2,col+1},{row-2,col}};
+                    return true;
+                }
+            }
         } else if (gd.stage == 3 && right) {
+            if (gd.type == 'T') {
+            // {{row,col-1},{row+1,col},{row,col},{row-1,col}};
+                if (row-1 >= 0 && !gd.display[row][col].old && !gd.display[row+1][col+1].old
+                    && !gd.display[row][col+1].old && !gd.display[row-1][col+1].old) {
+                    gd.curTet = {{row,col},{row+1,col+1},{row,col+1},{row-1,col+1}};
+                    return true;
+                } else if (row+3 <= 21 && !gd.display[row+2][col-1].old && !gd.display[row+3][col].old
+                    && !gd.display[row+2][col].old && !gd.display[row+1][col].old) {
+                    gd.curTet = {{row+2,col-1},{row+3,col},{row+2,col},{row+1,col}};
+                    return true;
+                } else if (row+3 <= 21 && !gd.display[row+2][col].old && !gd.display[row+3][col+1].old
+                    && !gd.display[row+2][col].old && !gd.display[row+1][col+1].old) {
+                    gd.curTet = {{row+2,col},{row+3,col+1},{row+2,col},{row+1,col+1}};
+                    return true;
+                }
+            }
         } else if (gd.stage == 3) {
+            if (gd.type == 'T') {
+            // {{row,col+1},{row+1,col},{row,col},{row-1,col}};
+                if (row-1 >= 0 && !gd.display[row][col].old && !gd.display[row+1][col-1].old
+                    && !gd.display[row][col-1].old && !gd.display[row-1][col-1].old) {
+                    gd.curTet = {{row,col},{row+1,col-1},{row,col-1},{row-1,col-1}};
+                    return true;
+                } else if (row+3 <= 21 && !gd.display[row+2][col+1].old && !gd.display[row+3][col].old
+                    && !gd.display[row+2][col].old && !gd.display[row+1][col].old) {
+                    gd.curTet = {{row+2,col+1},{row+3,col},{row+2,col},{row+1,col}};
+                    return true;
+                } else if (row+3 <= 21 && !gd.display[row+2][col].old && !gd.display[row+3][col-1].old
+                    && !gd.display[row+2][col-1].old && !gd.display[row+1][col-1].old) {
+                    gd.curTet = {{row+2,col},{row+3,col-1},{row+2,col-1},{row+1,col-1}};
+                    return true;
+                }
+            }
         } else if (gd.stage == 4 && right) {
+            if (gd.type == 'T') {
+            // {{row-1,col},{row,col-1},{row,col},{row,col+1}};
+                if (col-2 >= 0 && !gd.display[row-1][col-1].old && !gd.display[row][col-2].old
+                    && !gd.display[row][col-1].old && !gd.display[row][col].old) {
+                    gd.curTet = {{row-1,col-1},{row,col-2},{row,col-1},{row,col}};
+                    return true;
+                } else if (col-2 >= 0 && !gd.display[row][col-1].old && !gd.display[row+1][col-2].old
+                    && !gd.display[row+1][col-1].old && !gd.display[row+1][col].old) {
+                    gd.curTet = {{row,col-1},{row+1,col-2},{row+1,col-1},{row+1,col}};
+                    return true;
+                } else if (row-3 >= 0 && !gd.display[row-3][col].old && !gd.display[row-2][col-1].old
+                    && !gd.display[row-2][col].old && !gd.display[row-2][col+1].old) {
+                    gd.curTet = {{row-3,col},{row-2,col-1},{row-2,col},{row-2,col+1}};
+                    return true;
+                } else if (row-3 >= 0 && col-2 >= 0
+                    && !gd.display[row-3][col-1].old && !gd.display[row-2][col-2].old
+                    && !gd.display[row-2][col-1].old && !gd.display[row-2][col].old) {
+                    gd.curTet = {{row-3,col-1},{row-2,col-2},{row-2,col-1},{row-2,col}};
+                    return true;
+                }
+            }
         } else {
+            if (gd.type == 'T') {
+            // {{row+1,col},{row,col-1},{row,col},{row,col+1}};
+                if (col-2 >= 0 && !gd.display[row+1][col-1].old && !gd.display[row][col-2].old
+                    && !gd.display[row][col-1].old && !gd.display[row][col].old) {
+                    gd.curTet = {{row+1,col-1},{row,col-2},{row,col-1},{row,col}};
+                    return true;
+                } else if (row+2 <= 21 && col-2 >= 0
+                    && !gd.display[row+2][col].old && !gd.display[row+1][col].old
+                    && !gd.display[row+1][col-1].old && !gd.display[row+1][col].old) {
+                    gd.curTet = {{row+2,col},{row+1,col},{row+1,col-1},{row+1,col}};
+                    return true;
+                } else if (row-2 >= 0 && !gd.display[row-1][col].old && !gd.display[row-2][col-1].old
+                    && !gd.display[row-2][col].old && !gd.display[row-2][col+1].old) {
+                    gd.curTet = {{row-1,col},{row-2,col-1},{row-2,col},{row-2,col+1}};
+                    return true;
+                } else if (row-2 >= 0 && col+2 <= 9
+                    && !gd.display[row-1][col+1].old && !gd.display[row-2][col].old
+                    && !gd.display[row-2][col+1].old && !gd.display[row-2][col+2].old) {
+                    gd.curTet = {{row-1,col+1},{row-2,col},{row-2,col+1},{row-2,col+2}};
+                    return true;
+                }
+            }
         }
     }
     return false;
