@@ -29,6 +29,7 @@
 #define CYAN    "\033[38;5;51m"
 #define ORANGE  "\033[38;5;208m"
 #define WHITE   "\033[38;5;15m"
+#define GRAY    "\033[38;5;250m"
 
 enum menuMode {
     home,
@@ -108,6 +109,7 @@ private:
     int level = 1;
     int combo = -1;
     int lines = 0;
+    std::vector<std::string> moves = {};
     std::mutex displayMutex;
 
     bool checkEnd();
@@ -119,12 +121,6 @@ private:
     void printTetromino();
     void placeTetromino();
     bool touchGround();
-    void rotateI(int row, int col, bool right);
-    void rotateT(int row, int col, bool right);
-    void rotateS(int row, int col, bool right);
-    void rotateZ(int row, int col, bool right);
-    void rotateJ(int row, int col, bool right);
-    void rotateL(int row, int col, bool right);
     void checkClear();
     void checkPerfectClear(int cleared);
     void printScore();

@@ -45,7 +45,7 @@ void Game::printTetromino() {
                     break;
                 }
             }
-            if (print) printAtPosition(18+(cords.second*2), 6+cords.first, WHITE, "88");
+            if (print) printAtPosition(18+(cords.second*2), 6+cords.first, GRAY, "88");
         }
     }
 }
@@ -275,6 +275,7 @@ void Game::moveRight() {
     for (auto& cords : gd.curTet) cords.second++;
     printDisplay(true);
     printTetromino();
+    moves.push_back("mr");
 }
 
 void Game::moveLeft() {
@@ -287,6 +288,7 @@ void Game::moveLeft() {
     for (auto& cords : gd.curTet) cords.second--;
     printDisplay(true);
     printTetromino();
+    moves.push_back("ml");
 }
 
 bool Game::touchGround() {
@@ -306,11 +308,12 @@ void Game::softDrop() {
         printDisplay(true);
         printTetromino();
         printScore();
+        moves.push_back("sd");
     }
 }
 
 void Game::hardDrop() {
-    if (finished) return;
+    if (finished || paused) return;
     std::lock_guard<std::mutex> lock(displayMutex);
     if (!touchGround()) {
         while(!touchGround()) {
@@ -320,6 +323,7 @@ void Game::hardDrop() {
         placeTetromino();
         printTetromino();
         printScore();
+        moves.push_back("hd");
     }
 }
 
@@ -344,208 +348,152 @@ void Game::hold() {
 }
 
 void Game::rotate(bool right) {
-    if (finished) return;
+    if (finished || gd.type == 'O') return;
     std::lock_guard<std::mutex> lock(displayMutex);
     auto row = gd.curTet[2].first;
     auto col = gd.curTet[2].second;
-    if (gd.type == 'I') rotateI(row, col, right);
-    else if (gd.type == 'J') rotateJ(row, col, right);
-    else if (gd.type == 'L') rotateL(row, col, right);
-    else if (gd.type == 'S') rotateS(row, col, right);
-    else if (gd.type == 'T') rotateT(row, col, right);
-    else if (gd.type == 'Z') rotateZ(row, col, right);
+    int i = 0;
+    if (!right) i = 1;
+    bool canRotate = false;
+    if (gd.stage == 1) {
+        if (gd.type == 'I' && row < 20 && row > 0 && !gd.display[row+1][col-i].old &&
+            !gd.display[row+2][col-i].old && !gd.display[row-1][col-i].old) {
+            canRotate = true;
+            gd.curTet = {{row-1,col-i},{row,col-i},{row+1,col-i},{row+2,col-i}};
+        } else if (gd.type == 'T' && row < 21 && !gd.display[row+1][col].old) {
+            canRotate = true;
+            gd.curTet = {{row,col+1-i-i},{row-1,col},{row,col},{row+1,col}};
+        } else if (gd.type == 'S' && row < 21 && !gd.display[row+1-i-i][col+1-i-i].old
+            && !gd.display[row+i][col+1-i-i].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col+1-i-i},{row,col+1-i-i},{row,col},{row-1+i+i,col}};
+        } else if (gd.type == 'Z' && row < 21 && !gd.display[row-1+i+i][col+1-i-i].old
+            && !gd.display[row+1-i-i][col-i].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col+1-i-i},{row,col+1-i-i},{row,col},{row+1-i-i,col}};
+        } else if (gd.type == 'J' && row < 21 && !gd.display[row-1+i+i][col+1-i-i].old
+            && !gd.display[row-1][col].old && !gd.display[row+1][col].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col+1-i-i},{row-1+i+i,col},{row,col},{row+1-i-i,col}};
+        } else if (gd.type == 'L' && row < 21 && !gd.display[row+1-i-i][col+1-i-i].old
+            && !gd.display[row+1][col].old && !gd.display[row-1][col].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col+1-i-i},{row+1-i-i,col},{row,col},{row-1+i+i,col}};
+        }
+        if (canRotate) {
+            if (right) {
+                gd.stage++;
+                moves.push_back("rr");
+            } else {
+                gd.stage = 4;
+                moves.push_back("rl");
+            }
+        }
+    } else if (gd.stage == 2) {
+        if (gd.type == 'I' && col < 9 && col > 1 && !gd.display[row-i][col+1].old &&
+            !gd.display[row-i][col-1].old && !gd.display[row-i][col-2].old) {
+            canRotate = true;
+            gd.curTet = {{row-i,col+1},{row-i,col},{row-i,col-1},{row-i,col-2}};
+        } else if (gd.type == 'T' && col > 0 && !gd.display[row][col-1].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col},{row,col+1},{row,col},{row,col-1}};
+        } else if (gd.type == 'S' && col > 0 && !gd.display[row+1-i-i][col-1+i+i].old
+            && !gd.display[row+1-i-i][col-i].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col-1+i+i},{row+1-i-i,col},{row,col},{row,col+1-i-i}};
+        } else if (gd.type == 'Z' && col > 0 && !gd.display[row+1-i-i][col+1-i-i].old
+            && !gd.display[row-i][col-1+i+i].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col+1-i-i},{row+1-i-i,col},{row,col},{row,col-1+i+i}};
+        } else if (gd.type == 'J' && col > 0 && !gd.display[row+1-i-i][col+1-i-i].old
+            && !gd.display[row][col+1].old && !gd.display[row][col-1].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col+1-i-i},{row,col+1-i-i},{row,col},{row,col-1+i+i}};
+        } else if (gd.type == 'L' && col > 0 && !gd.display[row+1-i-i][col-1+i+i].old
+            && !gd.display[row][col-1].old && !gd.display[row][col+1].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col-1+i+i},{row,col-1+i+i},{row,col},{row,col+1-i-i}};
+        }
+        if (canRotate) {
+            if (right) {
+                gd.stage++;
+                moves.push_back("rr");
+            } else {
+                gd.stage--;
+                moves.push_back("rl");
+            }
+        }
+    } else if (gd.stage == 3) {
+        if (gd.type == 'I' && row < 21 && row > 1 && !gd.display[row+1][col+i].old &&
+            !gd.display[row-2][col+i].old && !gd.display[row-1][col+i].old) {
+            canRotate = true;
+            gd.curTet = {{row+1,col+i},{row,col+i},{row-1,col+i},{row-2,col+i}};
+        } else if (gd.type == 'T' && row > 0 && !gd.display[row-1][col].old) {
+            canRotate = true;
+            gd.curTet = {{row,col-1+i+i},{row+1,col},{row,col},{row-1,col}};
+        } else if (gd.type == 'S' && row > 0  && !gd.display[row-1+i+i][col-1+i+i].old
+            && !gd.display[row-i][col-1+i+i].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col-1+i+i},{row,col-1+i+i},{row,col},{row+1-i-i,col}};
+        } else if (gd.type == 'Z' && row > 0 && !gd.display[row+1-i-i][col-1+i+i].old
+            && !gd.display[row-1+i+i][col+i].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col-1+i+i},{row,col-1+i+i},{row,col},{row-1+i+i,col}};
+        } else if (gd.type == 'J' && row > 0 && !gd.display[row+1-i-i][col-1+i+i].old
+            && !gd.display[row+1][col].old && !gd.display[row-1][col].old) {
+            canRotate = true;
+            gd.curTet = {{row+1-i-i,col-1+i+i},{row+1-i-i,col},{row,col},{row-1+i+i,col}};
+        } else if (gd.type == 'L' && row > 0 && !gd.display[row-1+i+i][col-1+i+i].old
+            && !gd.display[row-1][col].old && !gd.display[row+1][col].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col-1+i+i},{row-1+i+i,col},{row,col},{row+1-i-i,col}};
+        }
+        if (canRotate) {
+            if (right) {
+                gd.stage++;
+                moves.push_back("rr");
+            } else {
+                gd.stage--;
+                moves.push_back("rl");
+            }
+        }
+    } else if (gd.stage == 4) {
+        if (gd.type == 'I' && col < 8 && col > 0 && !gd.display[row+i][col+1].old &&
+            !gd.display[row+i][col-1].old && !gd.display[row+i][col+2].old) {
+            canRotate = true;
+            gd.curTet = {{row+i,col-1},{row+i,col},{row+i,col+1},{row+i,col+2}};
+        } else if (gd.type == 'T' && col < 9 && !gd.display[row][col+1].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col},{row,col-1},{row,col},{row,col+1}};
+        } else if (gd.type == 'S' && col < 9  && !gd.display[row-1+i+i][col+1-i-i].old
+            && !gd.display[row-1+i+i][col+i].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col+1-i-i},{row-1+i+i,col},{row,col},{row,col-1+i+i}};
+        } else if (gd.type == 'Z' && col < 9 && !gd.display[row-1+i+i][col-1+i+i].old
+            && !gd.display[row+i][col+1-i-i].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col-1+i+i},{row-1+i+i,col},{row,col},{row,col+1-i-i}};
+        } else if (gd.type == 'J' && col < 9 && !gd.display[row-1+i+i][col-1+i+i].old
+            && !gd.display[row][col-1].old && !gd.display[row][col+1].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col-1+i+i},{row,col-1+i+i},{row,col},{row,col+1-i-i}};
+        } else if (gd.type == 'L' && col < 9 && !gd.display[row-1+i+i][col+1-i-i].old
+            && !gd.display[row][col+1].old && !gd.display[row][col-1].old) {
+            canRotate = true;
+            gd.curTet = {{row-1+i+i,col+1-i-i},{row,col+1-i-i},{row,col},{row,col-1+i+i}};
+        }
+        if (canRotate) {
+            if (right) {
+                gd.stage = 1;
+                moves.push_back("rr");
+            } else {
+                gd.stage--;
+                moves.push_back("rl");
+            }
+        }
+    }
     printDisplay(true);
     printTetromino();
-}
-
-void Game::rotateI(int row, int col, bool right) {
-    int i = 0;
-    if (!right) i = 1;
-    if (gd.stage == 1) {
-        if (row < 20 && row > 0 && !gd.display[row+1][col-i].old &&
-            !gd.display[row+2][col-i].old && !gd.display[row-1][col-i].old) {
-            gd.curTet = {{row-1,col-i},{row,col-i},{row+1,col-i},{row+2,col-i}};
-            if (right) gd.stage++;
-            else gd.stage = 4;
-        }
-    } else if (gd.stage == 2) {
-        if (col < 9 && col > 1 && !gd.display[row-i][col+1].old &&
-            !gd.display[row-i][col-1].old && !gd.display[row-i][col-2].old) {
-            gd.curTet = {{row-i,col+1},{row-i,col},{row-i,col-1},{row-i,col-2}};
-            if (right) gd.stage++;
-            else gd.stage--;
-        }
-    } else if (gd.stage == 3) {
-        if (row < 21 && row > 1 && !gd.display[row+1][col+i].old &&
-            !gd.display[row-2][col+i].old && !gd.display[row-1][col+i].old) {
-            gd.curTet = {{row+1,col+i},{row,col+i},{row-1,col+i},{row-2,col+i}};
-            if (right) gd.stage++;
-            else gd.stage--;
-        }
-    } else if (gd.stage == 4) {
-        if (col < 8 && col > 0 && !gd.display[row+i][col+1].old &&
-            !gd.display[row+i][col-1].old && !gd.display[row+i][col+2].old) {
-            gd.curTet = {{row+i,col-1},{row+i,col},{row+i,col+1},{row+i,col+2}};
-            if (right) gd.stage = 1;
-            else gd.stage--;
-        }
-    }
-}
-void Game::rotateT(int row, int col, bool right) {
-    int i = 0;
-    if (!right) i = 2;
-    if (gd.stage == 1) {
-        if (row < 21 && !gd.display[row+1][col].old) {
-            if (right) gd.stage++;
-            else gd.stage = 4;
-            gd.curTet = {{row,col+1-i},{row-1,col},{row,col},{row+1,col}};
-        }
-    } else if (gd.stage == 2) {
-        if (col > 0 && !gd.display[row][col-1].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i,col},{row,col+1},{row,col},{row,col-1}};
-        }
-    } else if (gd.stage == 3) {
-        if (row > 0 && !gd.display[row-1][col].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row,col-1+i},{row+1,col},{row,col},{row-1,col}};
-        }
-    } else if (gd.stage == 4) {
-        if (col < 9 && !gd.display[row][col+1].old) {
-            if (right) gd.stage = 1;
-            else gd.stage--;
-            gd.curTet = {{row-1+i,col},{row,col-1},{row,col},{row,col+1}};
-        }
-    }
-}
-void Game::rotateS(int row, int col, bool right) {
-    int i = 0;
-    if (!right) i = 1;
-    if (gd.stage == 1) {
-        if (row < 21 && !gd.display[row+1-i-i][col+1-i-i].old && !gd.display[row+i][col+1-i-i].old) {
-            if (right) gd.stage++;
-            else gd.stage = 4;
-            gd.curTet = {{row+1-i-i,col+1-i-i},{row,col+1-i-i},{row,col},{row-1+i+i,col}};
-        }
-    } else if (gd.stage == 2) {
-        if (col > 0 && !gd.display[row+1-i-i][col-1+i+i].old && !gd.display[row+1-i-i][col-i].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i-i,col-1+i+i},{row+1-i-i,col},{row,col},{row,col+1-i-i}};
-            gd.stage++;
-        }
-    } else if (gd.stage == 3) {
-        if (row > 0  && !gd.display[row-1+i+i][col-1+i+i].old && !gd.display[row-i][col-1+i+i].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row-1+i+i,col-1+i+i},{row,col-1+i+i},{row,col},{row+1-i-i,col}};
-            gd.stage++;
-        }
-    } else if (gd.stage == 4) {
-        if (col < 9  && !gd.display[row-1+i+i][col+1-i-i].old && !gd.display[row-1+i+i][col+i].old) {
-            if (right) gd.stage = 1;
-            else gd.stage--;
-            gd.curTet = {{row-1+i+i,col+1-i-i},{row-1+i+i,col},{row,col},{row,col-1+i+i}};
-            gd.stage = 1;
-        }
-    }
-}
-void Game::rotateZ(int row, int col, bool right) {
-    int i = 0;
-    if (!right) i = 1;
-    if (gd.stage == 1) {
-        if (row < 21 && !gd.display[row-1+i+i][col+1-i-i].old && !gd.display[row+1-i-i][col-i].old) {
-            if (right) gd.stage++;
-            else gd.stage = 4;
-            gd.curTet = {{row-1+i+i,col+1-i-i},{row,col+1-i-i},{row,col},{row+1-i-i,col}};
-        }
-    } else if (gd.stage == 2) {
-        if (col > 0 && !gd.display[row+1-i-i][col+1-i-i].old && !gd.display[row-i][col-1+i+i].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i-i,col+1-i-i},{row+1-i-i,col},{row,col},{row,col-1+i+i}};
-        }
-    } else if (gd.stage == 3) {
-        if (row > 0 && !gd.display[row+1-i-i][col-1+i+i].old && !gd.display[row-1+i+i][col+i].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i-i,col-1+i+i},{row,col-1+i+i},{row,col},{row-1+i+i,col}};
-        }
-    } else if (gd.stage == 4) {
-        if (col < 9 && !gd.display[row-1+i+i][col-1+i+i].old && !gd.display[row+i][col+1-i-i].old) {
-            if (right) gd.stage = 1;
-            else gd.stage--;
-            gd.curTet = {{row-1+i+i,col-1+i+i},{row-1+i+i,col},{row,col},{row,col+1-i-i}};
-        }
-    }
-}
-void Game::rotateJ(int row, int col, bool right) {
-    int i = 0;
-    if (!right) i = 2;
-    if (gd.stage == 1) {
-        if (row < 21 && !gd.display[row-1+i][col+1-i].old && !gd.display[row-1][col].old && 
-            !gd.display[row+1][col].old) {
-            if (right) gd.stage++;
-            else gd.stage = 4;
-            gd.curTet = {{row-1+i,col+1-i},{row-1+i,col},{row,col},{row+1-i,col}};
-        }
-    } else if (gd.stage == 2) {
-        if (col > 0 && !gd.display[row+1-i][col+1-i].old && !gd.display[row][col+1].old && 
-            !gd.display[row][col-1].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i,col+1-i},{row,col+1-i},{row,col},{row,col-1+i}};
-        }
-    } else if (gd.stage == 3) {
-        if (row > 0 && !gd.display[row+1-i][col-1+i].old && !gd.display[row+1][col].old && 
-            !gd.display[row-1][col].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i,col-1+i},{row+1-i,col},{row,col},{row-1+i,col}};
-        }
-    } else if (gd.stage == 4) {
-        if (col < 9 && !gd.display[row-1+i][col-1+i].old && !gd.display[row][col-1].old && 
-            !gd.display[row][col+1].old) {
-            if (right) gd.stage = 1;
-            else gd.stage--;
-            gd.curTet = {{row-1+i,col-1+i},{row,col-1+i},{row,col},{row,col+1-i}};
-        }
-    }
-}
-void Game::rotateL(int row, int col, bool right) {
-    int i = 0;
-    if (!right) i = 2;
-    if (gd.stage == 1) {
-        if (row < 21 && !gd.display[row+1-i][col+1-i].old && !gd.display[row+1][col].old && 
-            !gd.display[row-1][col].old) {
-            if (right) gd.stage++;
-            else gd.stage = 4;
-            gd.curTet = {{row+1-i,col+1-i},{row+1-i,col},{row,col},{row-1+i,col}};
-        }
-    } else if (gd.stage == 2) {
-        if (col > 0 && !gd.display[row+1-i][col-1+i].old && !gd.display[row][col-1].old && 
-            !gd.display[row][col+1].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row+1-i,col-1+i},{row,col-1+i},{row,col},{row,col+1-i}};
-        }
-    } else if (gd.stage == 3) {
-        if (row > 0 && !gd.display[row-1+i][col-1+i].old && !gd.display[row-1][col].old && 
-            !gd.display[row+1][col].old) {
-            if (right) gd.stage++;
-            else gd.stage--;
-            gd.curTet = {{row-1+i,col-1+i},{row-1+i,col},{row,col},{row+1-i,col}};
-        }
-    } else if (gd.stage == 4) {
-        if (col < 9 && !gd.display[row-1+i][col+1-i].old && !gd.display[row][col+1].old && 
-            !gd.display[row][col-1].old) {
-            if (right) gd.stage = 1;
-            else gd.stage--;
-            gd.curTet = {{row-1+i,col+1-i},{row,col+1-i},{row,col},{row,col-1+i}};
-        }
-    }
 }
 
 bool Game::checkEnd() {
