@@ -517,7 +517,18 @@ void Game::update() {
     if (finished) return;
     }
     if (place) {
-        std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+        for (int i = 0; i < 3; i++) {
+            int movesCount = moves.size();
+            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+            if (moves.size() == movesCount && touchGround()) {
+                std::lock_guard<std::mutex> lock(displayMutex);
+                placeTetromino();
+                break;
+            } else if (!touchGround()) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(countTime()));
+                break;
+            }
+        }
         std::lock_guard<std::mutex> lock(displayMutex);
         placeTetromino();
     } else std::this_thread::sleep_for(std::chrono::milliseconds(countTime()));
