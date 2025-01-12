@@ -113,6 +113,7 @@ private:
     std::mutex displayMutex;
 
     bool checkEnd();
+    bool canRotate(std::vector<std::pair<int, int>> cords);
     bool tryKick(bool right, int row, int col);
     void addTetromino(char type);
     bool dropTetromino();
