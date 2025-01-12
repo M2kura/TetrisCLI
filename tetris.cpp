@@ -12,6 +12,31 @@ void Tetris::start() {
     rawMode(false);
 }
 
+void Tetris::printHelp() {
+    std::cout << "Menu controls:" << std::endl;
+    std::cout << "j, arrow down - move cursor to the line below" << std::endl;
+    std::cout << "k, arrow up   - move cursor to the line above" << std::endl;
+    std::cout << "enter         - choose current line option\n" << std::endl;
+    std::cout << "Game controls:" << std::endl;
+    std::cout << "arrow down    - soft drop the piece" << std::endl;
+    std::cout << "space         - hard drop the piece" << std::endl;
+    std::cout << "arrow right   - move the piece to the right" << std::endl;
+    std::cout << "arrow left    - move the piece to the left" << std::endl;
+    std::cout << "arrow up, x   - rotate the piece clockwise" << std::endl;
+    std::cout << "enter, z      - rotate the piece counter clockwise" << std::endl;
+    std::cout << "c             - hold piece" << std::endl;
+    std::cout << "q             - pause the game\n" << std::endl;
+    std::cout << "In the main menu, to start a game press Start game." << std::endl;
+    std::cout << "To open settings press Options." << std::endl;
+    std::cout << "To quit tetris press Quit Tetris.\n" << std::endl;
+    std::cout << "During the game you can press q to pause the current\ngame, the menu will open." << std::endl;
+    std::cout << "To unpause a game press Resume game." << std::endl;
+    std::cout << "To open settings press Options." << std::endl;
+    std::cout << "To finish game and get back to the main menu press\nQuit Game.\n" << std::endl;
+    std::cout << "If the game is over, press Back to menu to get back\nto the main menu." << std::endl;
+}
+
+
 void Tetris::quitGame() {
     if (game) {
         delete game;
@@ -97,8 +122,15 @@ void Tetris::gameLoop() {
     }
 }
 
-int main() {
+
+int main(int argc, char* argv[]) {
     Tetris tetris;
-    tetris.start();
+    if (argc == 1) tetris.start();
+    else if (argc == 2 && std::string(argv[1]) == "--help") tetris.printHelp();
+    else {
+        std::cout << "Invalid arguments" << std::endl;
+        std::cout << "Run a programm with no arguments to start Tetris" << std::endl;
+        std::cout << "Run a programm with --help argument to read the help manual" << std::endl;
+    }
     return 0;
 }

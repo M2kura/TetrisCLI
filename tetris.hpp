@@ -137,6 +137,7 @@ private:
 class Tetris {
 public:
     void start();
+    void printHelp();
     void exit() { quit = true; }
     void newGame();
     void quitGame();
