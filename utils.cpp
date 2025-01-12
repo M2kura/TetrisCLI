@@ -20,14 +20,34 @@ void rawMode(bool start) {
     tcsetattr(STDIN_FILENO, TCSANOW, &tty);
 }
 
-std::string readFileToString(const std::string& filePath) {
-    std::ifstream file(filePath);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open file");
+char readDataCharAtLine(int n) {
+    std::ifstream data("../data");
+    if (!data) return '\0';
+    std::string line;
+    int currentLine = 0;
+    while (currentLine < n && std::getline(data, line)) currentLine++;
+    if (currentLine == n && !line.empty()) return line[0];
+    return '\0';
+}
+
+bool writeDataCharAtLine(int n, char ch) {
+    std::vector<std::string> lines;
+    {
+        std::ifstream inFile("../data");
+        if (!inFile) return false;
+        std::string line;
+        while (std::getline(inFile, line)) {
+            lines.push_back(line);
+        }
     }
-    std::stringstream buffer;
-    buffer << file.rdbuf();
-    return buffer.str();
+    if (lines.size() < n) return false;
+    lines[n-1][0] = ch;
+    std::ofstream outFile("../data", std::ios::trunc);
+    if (!outFile) return false;
+    for (const auto& line : lines) {
+        outFile << line << '\n';
+    }
+    return true;
 }
 
 void printAtPosition(int x, int y, const std::string& color, const std::string& text) {
@@ -81,7 +101,7 @@ void printGameInterface() {
     printAtPosition(44, 8, WHITE, "HOLD");
     for (int i = 1; i <= 4; i++) {
 	if (i == 1 || i == 4) printAtPosition(41, 8+i, WHITE, "+--------+");
-	else printAtPosition(41, 8+i, WHITE, "| . . . .|");
+	else printAtPosition(41, 8+i, WHITE, "|        |");
     }
 }
 

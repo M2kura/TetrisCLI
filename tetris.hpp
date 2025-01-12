@@ -43,6 +43,11 @@ struct square {
     std::string color;
 };
 
+struct options {
+    bool dots;
+    bool ghost;
+};
+
 class Tetris;
 
 // menu.cpp
@@ -73,6 +78,7 @@ public:
     bool isPaused() {return paused;}
     bool isFinished() {return finished;}
 
+    void setOptions(options set);
     void pause();
     void resume();
     void countDown();
@@ -88,7 +94,7 @@ public:
         gd.display = std::vector<std::vector<square>>(22, std::vector<square>(10, {false, ""}));
         gd.curTet = {};
         addTetromino(nextTetromino());
-        printDisplay(true);
+        printDisplay();
         printNext();
     };
 private:
@@ -102,6 +108,7 @@ private:
         bool canHold = true;
         int highest = 22;
     } gd;
+    options settings;
     bool paused = true;
     bool finished = false;
     std::vector<char> tetroQueue;
@@ -117,7 +124,7 @@ private:
     bool tryKick(bool right, int row, int col);
     void addTetromino(char type);
     bool dropTetromino();
-    void printDisplay(bool dots);
+    void printDisplay();
     void printNext();
     void printHold();
     void printTetromino();
@@ -138,32 +145,40 @@ class Tetris {
 public:
     void start();
     void printHelp();
-    void exit() { quit = true; }
+    void exit();
     void newGame();
     void quitGame();
     bool onPause() { return game && game->isPaused(); }
+    bool dotsOn() {return settings.dots;}
+    bool ghostOn() {return settings.ghost;}
     void pauseGame() { game->pause(); }
     void resumeGame() { game->resume(); }
+    void setGameOptions();
+    void toggleDots();
+    void toggleGhost();
 private:
     std::queue<char> inputQueue;
     std::mutex mtx;
     std::condition_variable cv;
     bool quit = false;
+    options settings;
     Menu menu{this};
     Game *game = nullptr;
 
     void inputLoop();
     void outputLoop();
     void gameLoop();
+    void setOptions();
 };
 
 
 // utils.cpp
 void rawMode(bool start);
-std::string readFileToString(const std::string& filePath);
 void printAtPosition(int x, int y, const std::string& color, const std::string& text);
 void emptyScreen();
 void printGameInterface();
 void printMessage(int code);
+char readDataCharAtLine(int n);
+bool writeDataCharAtLine(int n, char ch);
 
 #endif

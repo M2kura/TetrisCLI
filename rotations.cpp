@@ -255,6 +255,6 @@ void Game::rotate(bool right) {
         gd.stage--;
         moves.push_back("rl");
     }
-    printDisplay(true);
+    printDisplay();
     printTetromino();
 }

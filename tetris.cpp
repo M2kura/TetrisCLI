@@ -2,6 +2,7 @@
 
 void Tetris::start() {
     rawMode(true);
+    setOptions();
     menu.open(home);
     std::thread inputThread(&Tetris::inputLoop, this);
     std::thread outputThread(&Tetris::outputLoop, this);
@@ -10,6 +11,14 @@ void Tetris::start() {
     outputThread.join();
     gameThread.join();
     rawMode(false);
+}
+
+void Tetris::exit() {
+    if (settings.dots) writeDataCharAtLine(11, '1');
+    else writeDataCharAtLine(11, '0');
+    if (settings.ghost) writeDataCharAtLine(12, '1');
+    else writeDataCharAtLine(12, '0');
+    quit = true;
 }
 
 void Tetris::printHelp() {
@@ -36,6 +45,39 @@ void Tetris::printHelp() {
     std::cout << "If the game is over, press Back to menu to get back\nto the main menu." << std::endl;
 }
 
+void Tetris::toggleDots(){
+    if (settings.dots) {
+        settings.dots = false;
+        printAtPosition(27, 4, WHITE, "off");
+    } else {
+        settings.dots = true;
+        printAtPosition(27, 4, WHITE, "on ");
+    }
+    setGameOptions();
+}
+
+void Tetris::toggleGhost(){
+    if (settings.ghost) {
+        settings.ghost = false;
+        printAtPosition(27, 5, WHITE, "off");
+    } else {
+        settings.ghost = true;
+        printAtPosition(27, 5, WHITE, "on ");
+    }
+    setGameOptions();
+}
+
+void Tetris::setOptions() {
+    char dots = readDataCharAtLine(11);
+    char ghost = readDataCharAtLine(12);
+    if (dots == '1') settings.dots = true;
+    else if (dots == '0') settings.dots = false;
+    if (ghost == '1') settings.ghost = true;
+    else if (ghost == '0') settings.ghost = false;
+}
+void Tetris::setGameOptions() {
+    if (game) game->setOptions(settings);
+}
 
 void Tetris::quitGame() {
     if (game) {
@@ -48,6 +90,7 @@ void Tetris::quitGame() {
 void Tetris::newGame() {
     if (game) delete game;
     game = new Game();
+    setGameOptions();
     game->countDown();
 }
 
@@ -99,13 +142,15 @@ void Tetris::outputLoop() {
                 if (input == 'q') {
                     game->pause();
                     menu.open(paused);
-                } else if (input == 'C') game->moveRight();
-                else if (input == 'D') game->moveLeft();
-                else if (input == 'B') game->softDrop();
-                else if (input == ' ') game->hardDrop();
-                else if (input == 'c') game->hold();
-                else if (input == 'A' || input == 'x') game->rotate(true);
-                else if (input == '\n' || input == 'z') game->rotate(false);
+                } else if (!game->isPaused()) {
+                    if (input == 'C') game->moveRight();
+                    else if (input == 'D') game->moveLeft();
+                    else if (input == 'B') game->softDrop();
+                    else if (input == ' ') game->hardDrop();
+                    else if (input == 'c') game->hold();
+                    else if (input == 'A' || input == 'x') game->rotate(true);
+                    else if (input == '\n' || input == 'z') game->rotate(false);
+                }
             }
             lock.lock();
         }

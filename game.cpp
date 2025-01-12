@@ -1,7 +1,12 @@
 #include "tetris.hpp"
 
-void Game::printDisplay(bool dots) {
-    const char *background = dots ? " ." : "  ";
+void Game::setOptions(options set) {
+    settings.dots = set.dots;
+    settings.ghost = set.ghost;
+}
+
+void Game::printDisplay() {
+    const char *background = settings.dots ? " ." : "  ";
     for (int i = 0; i < 20; i++) {
         for (int j = 0; j < 10; j++) {
             auto cord = gd.display[i+2][j];
@@ -27,7 +32,7 @@ void Game::printTetromino() {
     for (auto& cords : gd.curTet) {
         if (cords.first > 1) printAtPosition(18+(cords.second*2), 6+cords.first, gd.color, "[]");
     }
-    if (!touchGround()) {
+    if (!touchGround() && settings.ghost) {
         auto ghost = gd.curTet;
         bool touch = false;
         while (!touch) {
@@ -51,7 +56,8 @@ void Game::printTetromino() {
 }
 
 void Game::printNext() {
-    for (int i = 1; i < 18; i++) if (i % 3 != 0) printAtPosition(6, 9+i, WHITE, " . . . .");
+    const char *background = settings.dots ? " . . . ." : "        ";
+    for (int i = 1; i < 18; i++) if (i % 3 != 0) printAtPosition(6, 9+i, WHITE, background);
     for (int i = 0; i < 6; i++) {
         char piece = tetroQueue[i];
         if (piece == 'I') printAtPosition(6, 11+3*i, CYAN, "[][][][]");
@@ -78,7 +84,8 @@ void Game::printNext() {
 }
 
 void Game::printHold() {
-	for (int i = 0; i < 2; i++) printAtPosition(41, 10+i, WHITE, "| . . . .|");
+    const char *background = settings.dots ? " . . . ." : "        ";
+    for (int i = 0; i < 2; i++) printAtPosition(42, 10+i, WHITE, background);
     if (gd.hold == 'I') printAtPosition(42, 11, CYAN, "[][][][]");
     else if (gd.hold == 'J') {
         printAtPosition(42, 10, BLUE, "[]");
@@ -102,6 +109,10 @@ void Game::printHold() {
 }
 
 void Game::countDown() {
+    printDisplay();
+    printTetromino();
+    printNext();
+    printHold();
     printAtPosition(27, 6, WHITE, "03");
     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     printAtPosition(27, 6, WHITE, "02");
@@ -236,7 +247,7 @@ void Game::placeTetromino() {
         addTetromino(nextTetromino());
         dropTetromino();
         printNext();
-        printDisplay(true);
+        printDisplay();
         if (!gd.canHold) gd.canHold = true;
     }
 }
@@ -255,7 +266,7 @@ bool Game::dropTetromino() {
     for (auto& cords : gd.curTet) {
         cords.first++;
     }
-    printDisplay(true);
+    printDisplay();
     printTetromino();
     for (auto& cords : gd.curTet) {
         if (cords.first == 21 || gd.display[cords.first+1][cords.second].old) {
@@ -266,14 +277,14 @@ bool Game::dropTetromino() {
 }
 
 void Game::moveRight() {
-    if (finished || paused) return;
+    if (finished) return;
     std::lock_guard<std::mutex> lock(displayMutex);
     for (auto& cords : gd.curTet) {
         if (cords.second == 9 ||
         gd.display[cords.first][cords.second+1].old) return;
     }
     for (auto& cords : gd.curTet) cords.second++;
-    printDisplay(true);
+    printDisplay();
     printTetromino();
     moves.push_back("mr");
 }
@@ -286,7 +297,7 @@ void Game::moveLeft() {
         gd.display[cords.first][cords.second-1].old) return;
     }
     for (auto& cords : gd.curTet) cords.second--;
-    printDisplay(true);
+    printDisplay();
     printTetromino();
     moves.push_back("ml");
 }
@@ -305,7 +316,7 @@ void Game::softDrop() {
     if (!touchGround()) {
         for (auto& cords : gd.curTet) cords.first++;
         score++;
-        printDisplay(true);
+        printDisplay();
         printTetromino();
         printScore();
         moves.push_back("sd");
@@ -313,7 +324,7 @@ void Game::softDrop() {
 }
 
 void Game::hardDrop() {
-    if (finished || paused) return;
+    if (finished) return;
     std::lock_guard<std::mutex> lock(displayMutex);
     if (!touchGround()) {
         while(!touchGround()) {
