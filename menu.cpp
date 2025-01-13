@@ -19,7 +19,7 @@ void Menu::press(const std::string key) {
             if (mode != gameover && mode != settings) toggle();
             if (mode == paused) app->resumeGame();
             if (mode == gameover) emptyScreen();
-            else if (mode == settings && app->onPause()) {
+            if (mode == settings && app->onPause()) {
                 mode = paused;
                 printMenu();
             } else if (mode == settings || mode == gameover) {
